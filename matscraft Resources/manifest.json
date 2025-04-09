@@ -1,0 +1,27 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "matscraft",
+    "description": "matscraft Resource Pack",
+    "uuid": "bd1d60be-cb85-4e34-b351-7eb799587a70",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 16, 0]
+  },
+  "metadata": {
+    "authors": ["mallardlabs"],
+    "generated_with": {
+      "blockbench_block_wizard": ["1.2.2"],
+      "blockbench_item_wizard": ["1.1.0"]
+    }
+  },
+  "modules": [
+    {
+      "description": "matscraft",
+      "type": "resources",
+      "uuid": "228c9ac8-04b8-4dc6-baaa-2cf7b890b0b4",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": []
+}
+{"rawtext":[{"text":"§6"},{"selector":"@s"},{"text":"\n§bCash§f: "},{"score":{"name":"*","objective":"cash"}},{"text":" \n§aKills§f: "},{"score":{"name":"*","objective":"kills"}},{"text":" \n§cDeaths§f: "},{"score":{"name":"*","objective":"deaths"}}]}

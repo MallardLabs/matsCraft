@@ -1,0 +1,10 @@
+{
+  "texture_data": {
+    "mats": {
+      "textures": "textures/items/mats.png"
+    },
+    "matsphone": {
+      "textures": "textures/items/matsphone.png"
+    }
+  }
+}
