@@ -6,7 +6,7 @@
     "replace_rules": [
       {
         "places_block": "matscraft:common_mats_ore",
-        "may_replace": ["minecraft:stone", "minecraft:coal"]
+        "may_replace": ["minecraft:stone"]
       }
     ]
   }
