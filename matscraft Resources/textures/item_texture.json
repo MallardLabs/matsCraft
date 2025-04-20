@@ -5,6 +5,15 @@
     },
     "matsphone": {
       "textures": "textures/items/matsphone.png"
+    },
+    "nando_pickaxe": {
+      "textures": "textures/items/pickaxe/nando.png"
+    },
+    "lowpolyduck_pickaxe": {
+      "textures": "textures/items/pickaxe/lowpolyduck.png"
+    },
+    "mezo_pickaxe": {
+      "textures": "textures/items/pickaxe/mezo.png"
     }
   }
 }

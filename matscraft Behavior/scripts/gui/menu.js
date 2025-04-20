@@ -13,6 +13,7 @@ const getPlayerScore = (player, objectiveName) => {
 };
 
 export const showMainMenu = (player) => {
+  console.log(player.getDynamicProperty("playerData"));
   const playerData = JSON.parse(player.getDynamicProperty("playerData"));
   return playerData.data.is_linked ? dashboard(player) : home(player);
 };
@@ -36,8 +37,8 @@ const dashboard = (player) => {
   const form = new ActionFormData()
     .title("MatsCraft Dashboard")
     .body("\n")
-    .button("Deposit Mats")
-    .button("Withdraw Mats")
+    .button("Shop")
+    // .button("Withdraw Mats")
     .button("§cDisconnect Discord");
 
   form.show(player).then((res) => {
@@ -45,59 +46,107 @@ const dashboard = (player) => {
 
     switch (res.selection) {
       case 0:
-        showDepositForm(player);
+        shop(player);
         break;
       case 1:
-        showWithdrawForm(player, playerScore);
-        break;
-      case 2:
         disconnectDiscord(player);
         break;
     }
   });
 };
 
-const showDepositForm = (player) => {
-  const form = new ModalFormData()
-    .title("Deposit Mats")
-    .slider("Amount to Deposit:", 0, 255, 1, 0); // Slider from 0 to 255, default 0
+const shop = (player) => {
+  let form = new ActionFormData();
+  form.title("Shop");
+  form.button("Nando Pickaxe", "textures/items/pickaxe/nando.png");
+  form.button("lowpolyduck Pickaxe", "textures/items/pickaxe/lowpolyduck.png");
+  form.button("Mezo Pickaxe", "textures/items/pickaxe/mezo.png");
 
   form.show(player).then((res) => {
     if (res.canceled) return;
-    const amount = res.formValues[0];
-    player.sendMessage(`matscraft deposit ${amount}`);
+    switch (res.selection) {
+      case 0:
+        buyPickaxe(player, {
+          id: "matscraft:nando_pickaxe",
+          name: "Nando Pickaxe",
+          cost: 50,
+          message:
+            "§lItem Name§r: Nando Pickaxe\n§lCost: §r50 Mats\n\n§lAbility\n§rBy Using Nando Pickaxe, you can get mats drops from common,uncommon blocks",
+        });
+        break;
+      case 1:
+        buyPickaxe(player, {
+          id: "matscraft:lowpolyduck_pickaxe",
+          name: "lowpolyduck Pickaxe",
+          cost: 150,
+          message:
+            "§lItem Name§r: lowpolyduck Pickaxe\n§lCost: §r100 Mats\n\n§lAbility:\n§rBy Using lowpolyduck Pickaxe, you can get mats drops from common,uncommon,rare,epic blocks",
+        });
+        break;
+      case 2:
+        buyPickaxe(player, {
+          id: "matscraft:mezo_pickaxe",
+          name: "Mezo Pickaxe",
+          cost: 200,
+          message:
+            "§lItem Name§r: Mezo Pickaxe\n§lCost: §r200 Mats\n\n§lAbility:\n§rBy Using Mezo Pickaxe, you can get mats drops from common,uncommon,rare,epic,legendary blocks",
+        });
+        break;
+    }
   });
 };
 
-const showWithdrawForm = (player, playerScore) => {
-  const form = new ModalFormData()
-    .title("Withdraw Mats")
-    .slider(
-      `Your Balance: §e${playerScore} §fMats\nWithdraw Amount`,
-      0,
-      playerScore,
-      1,
-      0
-    );
-
-  form.show(player).then((res) => {
-    if (res.canceled) return;
-    const amount = res.formValues[0];
-    player.runCommand(`scoreboard players set @s Mats ${playerScore - amount}`);
-    player.runCommand(
-      `title @s actionbar §aYour withdraw ${amount}x Mats has been processed!`
-    );
-  });
-};
-
-const disconnectDiscord = (player) => {
-  player.runCommand("say Disconnecting Discord..."); // Placeholder; replace with actual command
+const buyPickaxe = (player, data) => {
+  const balance = getPlayerScore(player, "Mats");
   const playerData = JSON.parse(player.getDynamicProperty("playerData"));
+  let form = new MessageFormData();
+  form.title(`Buy ${data.name}?`);
+  form.body(data.message);
+  form.button1("Cancel");
+  form.button2(balance >= data.cost ? "§2Buy" : "§cNot Enough Mats");
+  form.show(player).then(async (res) => {
+    if (res.selection === 1) {
+      const balance = getPlayerScore(player, "Mats");
+      if (balance >= data.cost) {
+        const response = await httpReq.request({
+          method: "PUT",
+          url: `${config.ENDPOINTS.UPDATE_BALANCE}`,
+          body: JSON.stringify({
+            discord_id: playerData.data.discord_id,
+            amount: -data.cost,
+          }),
+          headers: { "Content-Type": "application/json" },
+        });
+        if (response.status === 200) {
+          const body = JSON.parse(response.body);
+          player.runCommand(`scoreboard players set @s Mats ${body.balance}`);
+          player.runCommand(
+            `title @s actionbar §a${data.name} Purchased Successfully!`
+          );
+          player.runCommand(`give @s ${data.id} 1`);
+        }
+      } else {
+        player.runCommand(`title @s actionbar §cNot Enough Mats!`);
+      }
+    }
+  });
+};
+const disconnectDiscord = async (player) => {
+  player.runCommand("say Disconnecting Discord...");
+  const playerData = JSON.parse(player.getDynamicProperty("playerData"));
+  const response = await httpReq.request({
+    method: "POST",
+    url: `${config.ENDPOINTS.LOGOUT}`,
+    body: JSON.stringify({
+      minecraft_id: playerData.xuid,
+    }),
+    headers: { "Content-Type": "application/json" },
+  });
   playerData.data.is_linked = false;
   playerData.data.discord_id = null;
   playerData.data.discord_username = null;
   player.setDynamicProperty("playerData", JSON.stringify(playerData));
-  // player.runCommand("matscraft discord disconnect");
+  player.runCommand("scoreboard players set @s Mats 0");
 };
 
 const linkAccount = (player, title = "§eVerification Code") => {
@@ -121,11 +170,11 @@ const verifyCode = async (player, code) => {
     const playerData = JSON.parse(player.getDynamicProperty("playerData"));
     const response = await httpReq.request({
       method: "POST",
-      url: `${config.BASE_URL}/api/matscraft/auth`,
+      url: `${config.ENDPOINTS.AUTH}`,
       body: JSON.stringify({
-        xuid: playerData.xuid,
+        minecraft_id: playerData.xuid,
+        minecraft_username: player.nameTag,
         token: code,
-        username: player.nameTag,
       }),
       headers: { "Content-Type": "application/json" },
     });

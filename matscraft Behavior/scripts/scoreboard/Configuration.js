@@ -57,7 +57,7 @@ const ScoreboardDisplay = {
     "§eLevel: §r{PlayerLevel}",
     "§eXP: §r{PlayerXP}",
     "§eMats: §rFormatMoney(Scoreboard(Mats))",
-    "§eOnline: §r{TotalPlayer} / 20",
+    "§eOnline: §r{TotalPlayer} / 1000",
   ],
 };
 

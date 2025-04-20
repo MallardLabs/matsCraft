@@ -1,84 +1,43 @@
 import { world } from "@minecraft/server";
 import { config } from "../config";
 import { httpReq } from "../lib/httpReq";
-export class BlockBreakEvent {
-  constructor() {
-    this.logBatch = []; // The batch of logs block break
-    this.batchSize = 1; // The maximum number of logs to send in a single request
+import { pickAxeAbility } from "../logic/pickaxeAbility.js";
+world.afterEvents.playerBreakBlock.subscribe(async (event) => {
+  const {
+    player,
+    brokenBlockPermutation: { type: block },
+    block: { location, dimension },
+    itemStackAfterBreak: { typeId },
+  } = event;
+  const blockName = block.id;
+  const PickAxe = typeId;
+  await itemDrops(player, blockName, PickAxe, location, dimension);
+});
+
+const itemDrops = async (player, blockName, PickAxe, location, dimension) => {
+  const playerData = JSON.parse(player.getDynamicProperty("playerData"));
+  if (!playerData.data.is_linked) {
+    return;
   }
 
-  initialize() {
-    world.afterEvents.playerBreakBlock.subscribe((event) =>
-      this.handleBlockBreak(event)
+  //Check The Pickaxe Ability
+  const result = pickAxeAbility.find((ability) => ability.typeId === PickAxe);
+  const allowedBlocks = result.allowed;
+
+  // If Block Not In Allowed List, Remove Item From World
+  if (!allowedBlocks.includes(blockName)) {
+    dimension.runCommand(
+      `kill @e[type=item,x=${location.x},y=${location.y},z=${location.z},r=2]`
     );
   }
+};
 
-  handleBlockBreak = (event) => {
-    const {
-      player,
-      brokenBlockPermutation: { type: block },
-      block: { location: position },
-    } = event;
-    const blockName = block.id;
-    this.logBlockBreak(player, blockName, position);
-  };
-
-  // Function to log the block break
-  logBlockBreak = (player, blockName, position) => {
-    const playerData = JSON.parse(player.getDynamicProperty("playerData")); // Get the player's data
-    if (!playerData.data.is_linked) return; // Check if the player is linked
-    if (!blockName.includes("matscraft")) return; // Check if the block is a matscraft block
-
-    const data = {
-      minecraft_id: playerData.xuid,
-      block: blockName.replace("matscraft:", ""),
-      position: {
-        x: position.x,
-        y: position.y,
-        z: position.z,
-      },
-      mined_at: new Date().toISOString(),
-    };
-
-    this.logBatch.push(data);
-    this.notifyPlayer(player, blockName, position);
-    if (this.logBatch.length >= this.batchSize) {
-      console.warn("Batch full, sending to database...");
-      this.sendBatch();
-    }
-  };
-
-  // Function to send the batch from the logs
-  sendBatch = async () => {
-    try {
-      const response = await httpReq.request({
-        method: "POST",
-        url: `${config.BASE_URL}/api/matscraft/blocks`,
-        body: this.logBatch,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      this.logBatch = [];
-      console.info(response.body);
-    } catch (error) {
-      console.error("Error sending batch:", error);
-    }
-  };
-
-  // For Debuging
-  notifyPlayer = (player, blockName, position) => {
-    if (!blockName.includes("matscraft")) {
-      return;
-    }
-
-    player.runCommand(
-      `title @s actionbar §aYou broke ${blockName.replace(
-        "matscraft:",
-        ""
-      )} at ${position.x.toFixed(1)}, ${position.y.toFixed(
-        1
-      )}, ${position.z.toFixed(1)}!`
-    );
-  };
-}
+const addBlocks = async () => {
+  const blocks = await httpReq.request({
+    method: "GET",
+    url: `${config.ENDPOINTS.BLOCKS}`,
+  });
+  const parsedBlocks = JSON.parse(blocks.body);
+  const blockList = parsedBlocks.map((block) => block.id);
+  return blockList;
+};

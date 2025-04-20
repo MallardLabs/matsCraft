@@ -69,6 +69,7 @@ export class ItemPickup {
     }
   }
 
+  // Function to process item pickups > update users balance
   async processItemPickup(player, typeId, pickedUpAmount, inventory) {
     const playerData = JSON.parse(player.getDynamicProperty("playerData"));
     if (!playerData.data.is_linked) {
@@ -81,16 +82,18 @@ export class ItemPickup {
     console.log(`Player ${player.name} picked up ${pickedUpAmount}x ${typeId}`);
     const response = await httpReq.request({
       method: "PUT",
-      url: `${config.BASE_URL}/api/matscraft/users/balance`,
+      url: `${config.ENDPOINTS.UPDATE_BALANCE}`,
       body: JSON.stringify({
-        minecraft_id: playerData.xuid,
+        discord_id: playerData.data.discord_id,
         amount: pickedUpAmount,
       }),
       headers: {
         "Content-Type": "application/json",
       },
     });
+    console.log(`Status: ${response.status}, Response: ${response.body}`);
     const body = JSON.parse(response.body);
+
     if (response.status == 200) {
       console.log(JSON.stringify(body));
       player.runCommand(`scoreboard players set @s Mats ${body.balance}`);
@@ -101,13 +104,12 @@ export class ItemPickup {
   notifyPlayer(player, pickedUpAmount) {
     const itemName = this.identifier.split(":")[1];
     player.runCommand("playsound random.pop @s");
-    player.runCommand(
-      `title @s actionbar §aYou've picked up ${pickedUpAmount}x ${itemName}!`
-    );
+    player.runCommand(`title @s actionbar §a +${pickedUpAmount} ${itemName}!`);
     player.runCommand("particle minecraft:critical ~ ~ ~");
     console.warn(`${player.name} picked up ${pickedUpAmount}x ${itemName}`);
   }
 
+  // Function to remove items from the player's inventory
   removeItemsFromInventory(typeId, amountToRemove, inventory) {
     let remainingToRemove = amountToRemove;
     for (let i = 0; i < inventory.size && remainingToRemove > 0; i++) {
