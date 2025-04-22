@@ -1,6 +1,5 @@
 import { MessageFormData } from "@minecraft/server-ui";
-import { httpReq } from "../utils/httpReq.js";
-import { ENDPOINTS } from "../config/endpoints.js";
+
 import { getPlayerData } from "../utils/playerUtils.js";
 import { getPlayerScore, setPlayerScore, showActionBar, giveItem } from "./playerService.js";
 import { updateBalance } from "./balanceService.js";
