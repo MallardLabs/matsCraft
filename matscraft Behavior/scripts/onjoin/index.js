@@ -1,7 +1,7 @@
 import { world } from "@minecraft/server";
 import { stringToBase62 } from "../lib/base62.js";
 import { wait } from "../lib/wait.js";
-import { showMainMenu } from "../gui/menu.js";
+import { showMainMenu } from "../gui/main";
 
 world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
   setPlayerData(player, initialSpawn);

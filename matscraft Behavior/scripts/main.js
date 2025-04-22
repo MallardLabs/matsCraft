@@ -1,18 +1,24 @@
 import { ItemPickup } from "./events/itemPickup";
 
-import { showMainMenu } from "./gui/menu";
+import { showMainMenu } from "./gui/main.js";
 import { initialize } from "./scoreboard/main";
 import { world, system } from "@minecraft/server";
+
 import "./onjoin/index.js";
 import "./events/blockBreak.js";
-import { pickAxeAbility } from "./logic/pickaxeAbility.js";
+import { ENDPOINTS } from "./config/endpoints.js";
+import { variables } from "@minecraft/server-admin";
 const itemPickup = new ItemPickup("matscraft:mats", 0, "Mats");
 itemPickup.initialize();
 initialize();
-console.log(JSON.stringify(pickAxeAbility, 1));
+
+console.info(`================ CONFIG ===================`)
+console.info(`SECRET KEY: ${variables.get("SECRET_KEY")}`)
+console.info(`API_BASE_URL: ${ENDPOINTS.BASE_URL}`)
+console.info(`================ CONFIG ===================`)
+
 world.afterEvents.itemUse.subscribe(async (data) => {
   const player = data.source;
-  console.log(data.itemStack.typeId);
   if (data.itemStack.typeId === "matsphone:matsphone") {
     player.sendMessage(`You used: ${player.id}`);
     showMainMenu(player);
