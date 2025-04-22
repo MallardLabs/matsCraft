@@ -1,6 +1,7 @@
 import { world, system, ScoreboardObjective } from "@minecraft/server";
 import { httpReq } from "../lib/httpReq.js";
-import { config } from "../config.js";
+import { genSecret } from "../utils/genSecret.js";
+import { updateBalance } from "../services/balanceService.js";
 export class ItemPickup {
   constructor(identifier, ticks, scoreboardName) {
     this.identifier = identifier;
@@ -80,21 +81,9 @@ export class ItemPickup {
       return;
     }
     console.log(`Player ${player.name} picked up ${pickedUpAmount}x ${typeId}`);
-    const response = await httpReq.request({
-      method: "PUT",
-      url: `${config.ENDPOINTS.UPDATE_BALANCE}`,
-      body: JSON.stringify({
-        discord_id: playerData.data.discord_id,
-        amount: pickedUpAmount,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    console.log(`Status: ${response.status}, Response: ${response.body}`);
-    const body = JSON.parse(response.body);
-
+    const response = await updateBalance(player,pickedUpAmount)
     if (response.status == 200) {
+      const body = JSON.parse(response.body)
       console.log(JSON.stringify(body));
       player.runCommand(`scoreboard players set @s Mats ${body.balance}`);
       this.notifyPlayer(player, pickedUpAmount);
