@@ -19,3 +19,5 @@ pnpm install
  ```bash
  npm run build
  ```
+
+view latest [release](https://github.com/MallardLabs/matsCraft/releases) 
