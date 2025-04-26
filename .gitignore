@@ -27,3 +27,5 @@ mods/
 logs/
 crash-reports/
 saves/
+dist/
+node_modules/
