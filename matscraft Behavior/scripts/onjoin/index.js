@@ -22,7 +22,6 @@ const setPlayerData = async (player, initialSpawn) => {
           },
         })
       );
-      console.log(`playerData Is Created: ${playerData}`);
       return;
     }
     if (!JSON.parse(playerData).data.is_linked) {

@@ -20,7 +20,6 @@ console.info(`================ CONFIG ===================`)
 world.afterEvents.itemUse.subscribe(async (data) => {
   const player = data.source;
   if (data.itemStack.typeId === "matsphone:matsphone") {
-    player.sendMessage(`You used: ${player.id}`);
     showMainMenu(player);
   }
 });

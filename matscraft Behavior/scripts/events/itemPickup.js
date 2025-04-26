@@ -1,6 +1,4 @@
 import { world, system, ScoreboardObjective } from "@minecraft/server";
-import { httpReq } from "../lib/httpReq.js";
-import { genSecret } from "../utils/genSecret.js";
 import { updateBalance } from "../services/balanceService.js";
 export class ItemPickup {
   constructor(identifier, ticks, scoreboardName) {
@@ -80,7 +78,7 @@ export class ItemPickup {
       );
       return;
     }
-    console.log(`Player ${player.name} picked up ${pickedUpAmount}x ${typeId}`);
+    
     const response = await updateBalance(player,pickedUpAmount)
     if (response.status == 200) {
       const body = JSON.parse(response.body)

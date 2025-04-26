@@ -3,7 +3,7 @@ import { buyPickaxe } from "../services/shopService.js";
 import { PICKAXES } from "../config/items.js";
 
 export const showShop = (player) => {
-  const form = new ActionFormData().title("Shop");
+  const form = new ActionFormData().title("SHOP");
   PICKAXES.forEach((pickaxe) => {
     form.button(pickaxe.name, pickaxe.icon);
   });
