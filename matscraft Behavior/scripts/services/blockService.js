@@ -1,8 +1,7 @@
 import { world } from "@minecraft/server";
 import { httpReq } from "../lib/httpReq.js";
-import { config } from "../config/index.js";
+import { ENDPOINTS } from "../config/endpoints.js";
 import { generateRandomString } from "../utils/genRandomStr.js";
-import { generateISOTimestamp } from "../utils/generateTimestamp.js";
 import { getPlayerData } from "../utils/playerUtils.js";
 
 /**
@@ -48,7 +47,7 @@ const sendBlocksToDatabase = async (blocks) => {
   try {
     const response = await httpReq.request({
       method: "POST",
-      url: config.ENDPOINTS.SAVE_BLOCKS,
+      url: ENDPOINTS.INSERT_BLOCK,
       body: JSON.stringify(blocks),
       headers: { "Content-Type": "application/json" },
     });
