@@ -24,7 +24,6 @@ Thumbs.db
 
 # Ignore Minecraft-specific generated files
 mods/
-config/
 logs/
 crash-reports/
 saves/
