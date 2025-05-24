@@ -5,19 +5,28 @@
 - **Node.js**: Version 16 or higher. Download from [nodejs.org](https://nodejs.org/).
 - **pnpm**: Included with Node.js, used to install dependencies.
 
-### Setup
+###
 
-1. **Clone or Download the Repository**:
+**Clone or Download the Repository**:
 clone the repository:
+
 ```bash
 git clone https://github.com/mallardlabs/matscraft.git
 cd matscraft
 pnpm install
 ```
 
-### Building the Project
- ```bash
- npm run build
- ```
+**Setting environment**
 
-view latest [release](https://github.com/MallardLabs/matsCraft/releases) 
+Edit `.env` file and locate to server folder
+
+```bash
+OUTPUT_BASE=/home/mallardlabs/bedrock_server
+```
+
+### Commands
+
+```bash
+pnpm watch // Develop Mode
+pnpm build:mcpack // Building Project
+```

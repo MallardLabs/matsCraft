@@ -1,31 +1,30 @@
 {
   "name": "matscraft",
-  "version": "1.4.0",
-  "description": "![Logo](https://github.com/MallardLabs/matsCraft/blob/master/assets/logo.png?raw=true?raw=true)",
-  "main": "index.js",
-  "type": "module",
+  "version": "1.0.0",
+  "description": "Minecraft Bedrock Edition mod",
   "scripts": {
-    "build": "rm -rf dist && mkdir -p dist && cp -r 'matscraft Resources' dist/ && cp -r 'matscraft Behavior' dist/ && rollup -c",
-    "postbuild": "rm -rf 'dist/matscraft Behavior/scripts' && mkdir -p 'dist/matscraft Behavior/scripts' && cp 'dist/main.js' 'dist/matscraft Behavior/scripts/main.js' && rm 'dist/main.js' && npm run packed",
-    "packed": "mkdir -p build && node build.js"
+    "build": "tsc && node copy-packs.js",
+    "build:mcpack": "npm run build && node tools/build.js",
+    "watch": "tsc --watch & node watch-copy.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mallardlabs/matscraft.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/mallardlabs/matscraft/issues"
-  },
-  "homepage": "https://github.com/mallardlabs/matscraft#readme",
-  "devDependencies": {
-    "rollup": "^4.0.0",
-    "rollup-plugin-terser": "^7.0.2"
-  },
-  "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f",
   "dependencies": {
-    "zip-lib": "^1.1.2"
-  }
+    "@minecraft/math": "^2.2.4",
+    "@minecraft/server": "^1.8.0",
+    "@minecraft/server-admin": "1.0.0-beta.11940b24",
+    "@minecraft/server-net": "1.0.0-beta.1.21.83-stable",
+    "@minecraft/server-ui": "^1.3.0",
+    "@minecraft/vanilla-data": "^1.21.81",
+    "archiver": "^7.0.1",
+    "crypto-js": "4.2.0"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^20.11.24",
+    "chokidar": "^3.5.3",
+    "dotenv": "^16.4.5",
+    "esbuild": "^0.25.4",
+    "fs-extra": "^11.2.0",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f"
 }

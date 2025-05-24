@@ -1,31 +1,4 @@
-# Ignore build directories
-/build/
-/bin/
-/run/
-
-# Ignore Gradle files
-.gradle/
-gradlew
-gradlew.bat
-
-# Ignore IDE-specific files
-.idea/
-*.iml
-*.iws
-
-# Ignore logs and temporary files
-*.log
-*.tmp
-*.lock
-
-# Ignore OS-specific files
-.DS_Store
-Thumbs.db
-
-# Ignore Minecraft-specific generated files
-mods/
-logs/
-crash-reports/
-saves/
-dist/
 node_modules/
+dist
+dist/
+
