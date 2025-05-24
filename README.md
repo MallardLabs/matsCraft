@@ -1,6 +1,8 @@
 ![Logo](https://github.com/MallardLabs/matsCraft/blob/master/assets/logo.png?raw=true)
-
-
+----
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/MallardLabs/matsCraft)
+![GitHub last commit](https://img.shields.io/github/last-commit/MallardLabs/matsCraft)
+----
 ## Prerequisites
 
 - **Node.js**: Version 16 or higher — [Download here](https://nodejs.org/)
