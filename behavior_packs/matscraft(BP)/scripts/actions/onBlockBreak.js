@@ -5,9 +5,10 @@ import CONFIG from "../config/config";
 import { world } from "@minecraft/server";
 import httpReq from "../lib/httpReq";
 import { getPlayerData } from "../utils/playerUtils";
+import genSecret from "../lib/genSecret";
 const pickAxeAbility = [
     {
-        typeId: "matscraft:nando_pickaxe",
+        typeId: "matscraft:nanndo_pickaxe",
         allowed: ["matscraft:common_mats_ore", "matscraft:uncommon_mats_ore"],
     },
     {
@@ -90,7 +91,10 @@ const updateBlock = async (data) => {
             method: "POST",
             url: CONFIG.INSERT_BLOCK,
             body: JSON.stringify(data),
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                matscraft_token: genSecret(),
+            },
         });
         if (response.status === 200) {
             console.info("Successfully saved blocks to database");
