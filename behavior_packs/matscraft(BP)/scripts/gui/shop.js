@@ -6,11 +6,11 @@ import genSecret from "../lib/genSecret.js";
 import CONFIG from "../config/config.js";
 const PICKAXES = [
     {
-        id: "matscraft:nando_pickaxe",
-        name: "Nando Pickaxe",
+        id: "matscraft:nanndo_pickaxe",
+        name: "Nanndo Pickaxe",
         cost: 50,
         icon: "textures/items/pickaxe/nando.png",
-        message: "§lItem Name§r: Nando Pickaxe\n§lCost: §r50 Mats\n\n§lAbility\n§rBy Using Nando Pickaxe, you can get mats drops from common,uncommon blocks",
+        message: "§lItem Name§r: Nanndo Pickaxe\n§lCost: §r50 Mats\n\n§lAbility\n§rBy Using Nanndo Pickaxe, you can get mats drops from common,uncommon blocks",
     },
     {
         id: "matscraft:lowpolyduck_pickaxe",
