@@ -23,7 +23,7 @@ const ScoreboardDisplay: ScoreboardConfig = {
     "§eDiscord: §r{Discord}",
     "§eLevel: §r{PlayerLevel}",
     "§eXP: §r{PlayerXP}",
-    "§eMats: §rFormatMoney(Scoreboard(Mats))",
+    "§eMats: §r FormatMoney(Scoreboard(Mats))",
     "§eOnline: §r{TotalPlayer} / 1000",
   ],
 };
