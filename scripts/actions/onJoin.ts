@@ -26,7 +26,7 @@ world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
       return;
     }
 
-    // Update balance when player joins
+    // Sync player data
     const xuid = playerData.xuid;
     const data = await httpReq.request({
       method: "GET",
@@ -37,6 +37,17 @@ world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
       },
     });
     const body = JSON.parse(data.body);
+
+    // if player data found but the status is not linked or player data not found
+    if (body.is_verified === false || body?.message === "User not found") {
+      // reset player data on the world
+      const xuid = await getXUID(player);
+      setPlayerScore(player, "Mats", 0);
+      updatePlayerData(player, { xuid: xuid, data: { is_linked: false } });
+      return;
+    }
+
+    // if it pass, only update player balance
     setPlayerScore(player, "Mats", body.balance);
   }
 
