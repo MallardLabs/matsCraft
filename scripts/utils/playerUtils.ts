@@ -22,23 +22,47 @@ export const showActionBar = (player: any, message: string) => {
 export const giveItem = (player: any, itemId: string, amount = 1) => {
   player.runCommand(`give @s ${itemId} ${amount}`);
 };
-export async function getXUID(player: any) {
+export async function getXUID(player: any): Promise<number | null> {
+  const { nameTag } = player;
+
   try {
-    const response = await httpReq.request({
+    // First try using mcprofile.io
+    const primaryResponse = await httpReq.request({
       method: "GET",
-      url: `https://api.geysermc.org/v2/xbox/xuid/${player.nameTag}`,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      url: `https://mcprofile.io/api/v1/bedrock/gamertag/${nameTag}`,
+      headers: { "Content-Type": "application/json" },
     });
-    const body = JSON.parse(response.body);
-    console.warn(`XUID for ${player.nameTag}: ${body.xuid}`);
-    return body.xuid;
+
+    const primaryData = JSON.parse(primaryResponse.body);
+
+    // if it succeeds, return the XUID
+    if (primaryData?.xuid) {
+      console.warn(`XUID for ${nameTag} (mcprofile.io): ${primaryData.xuid}`);
+      return primaryData.xuid;
+    }
+
+    // if it fails, fallback to geysermc.org
+    const fallbackResponse = await httpReq.request({
+      method: "GET",
+      url: `https://api.geysermc.org/v2/xbox/xuid/${nameTag}`,
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const fallbackData = JSON.parse(fallbackResponse.body);
+
+    // if it succeeds, return the XUID
+    if (fallbackData?.xuid) {
+      console.warn(`XUID for ${nameTag} (geysermc.org): ${fallbackData.xuid}`);
+      return fallbackData.xuid;
+    }
+
+    return null;
   } catch (error) {
-    console.warn(`Error fetching XUID: ${error}`);
+    console.warn(`Error fetching XUID for ${nameTag}:`, error);
     return null;
   }
 }
+
 export const getPlayerData = (player?: any) => {
   const data = player.getDynamicProperty("playerData");
   if (data) {
