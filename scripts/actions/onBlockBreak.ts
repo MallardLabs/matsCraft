@@ -39,29 +39,32 @@ blockBreak.listen((data, actions) => {
   const { player, blockId, location, toolTypeId } = data;
   const playerData = getPlayerData(player);
 
-  const pickAxe = pickAxeAbility.find(
-    (pickAxe) => pickAxe.typeId === toolTypeId
-  );
-
   if (!playerData || !playerData.data.is_linked) {
     actions.restore();
     actions.removeDropItem();
     return;
   }
 
-  if (blockId.includes("matscraft")) {
-    if (pickAxe) {
-      if (!pickAxe.allowed.includes(blockId)) {
-        actions.removeDropItem();
-        return;
-      }
-      if (blockId.includes("matscraft")) {
-        const blockData = createBlockData(playerData.xuid, blockId, location);
-        storePendingBlock(blockData);
-      }
-    }
+  // Only handle blocks that include "matscraft"
+  const isMatscraftBlock = blockId.includes("matscraft");
+  if (!isMatscraftBlock) {
+    actions.removeDropItem();
+    return;
   }
+
+  const pickAxe = pickAxeAbility.find((p) => p.typeId === toolTypeId);
+
+  // If no matching pickaxe or block not allowed, prevent drop
+  if (!pickAxe || !pickAxe.allowed.includes(blockId)) {
+    actions.removeDropItem();
+    return;
+  }
+
+  // All checks passed, store the block data
+  const blockData = createBlockData(playerData.xuid, blockId, location);
+  storePendingBlock(blockData);
 });
+
 const createBlockData = (xuid: number, blockName: string, location: any) => {
   return {
     hash: generateRandomString(),
