@@ -1,12 +1,20 @@
 {
   "format_version": "1.19.0",
   "minecraft:ore_feature": {
-    "description": { "identifier": "matscraft:common_mats_ore_feature" },
+    "description": {
+      "identifier": "matscraft:common_mats_ore_feature"
+    },
     "count": 25,
     "replace_rules": [
       {
         "places_block": "matscraft:common_mats_ore",
-        "may_replace": ["minecraft:stone","minecraft:copper_ore","minecraft:coal_ore"]
+        "may_replace": [
+          "minecraft:stone",
+          "minecraft:copper_ore",
+          "minecraft:coal_ore",
+          "minecraft:cobblestone",
+          "minecraft:gravel"
+        ]
       }
     ]
   }

@@ -6,7 +6,11 @@
     "replace_rules": [
       {
         "places_block": "matscraft:rare_mats_ore",
-        "may_replace": ["minecraft:stone", "minecraft:deepslate"]
+        "may_replace": [
+          "minecraft:stone",
+          "minecraft:cobblestone",
+          "minecraft:deepslate"
+        ]
       }
     ]
   }
