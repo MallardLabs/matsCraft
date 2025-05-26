@@ -34,7 +34,7 @@ export const verifyCode = async (player: any, code: string) => {
       url: CONFIG.AUTH,
       body: JSON.stringify({
         minecraft_id: playerData.xuid,
-        minecraft_username: player.nameTag,
+        minecraft_username: player.nameTag ? player.nameTag : player.name,
         token: code,
       }),
       headers: {
