@@ -1,7 +1,7 @@
-import { world, system, } from "@minecraft/server";
+import { world, system } from "@minecraft/server";
 class ItemPickup {
     constructor() {
-        this.DEFAULT_TICK = 10;
+        this.DEFAULT_TICK = 20;
         this.listeners = [];
         this.playerCache = new Map();
         this.systemIntervalId = null;
