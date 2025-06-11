@@ -10,7 +10,7 @@ import {
 } from "../utils/playerUtils";
 import genSecret from "../lib/genSecret";
 
-const auth = (player: any, title = "§eVerification Code") => {
+const auth = (player: any, title = "§lVerification Code") => {
   const form = new ModalFormData()
     .title(title)
     .textField("", "xxx-xxx")
@@ -29,17 +29,13 @@ const auth = (player: any, title = "§eVerification Code") => {
 export const verifyCode = async (player: any, code: string) => {
   try {
     const playerData = getPlayerData(player);
+    const xuid = playerData.xuid;
+    const username = player.nameTag ? player.nameTag : player.name;
     const response = await httpReq.request({
-      method: "POST",
-      url: CONFIG.AUTH,
-      body: JSON.stringify({
-        minecraft_id: playerData.xuid,
-        minecraft_username: player.nameTag ? player.nameTag : player.name,
-        token: code,
-      }),
+      method: "GET",
+      url: `${CONFIG.AUTH}/${playerData.xuid}/login?auth_tokens=${code}&minecraft_username=${username}`,
       headers: {
-        "Content-Type": "application/json",
-        matscraft_token: genSecret(),
+        "matscraft-secret": genSecret(),
       },
     });
 
@@ -49,13 +45,18 @@ export const verifyCode = async (player: any, code: string) => {
     );
 
     if (response.status === 200) {
-      playerData.data.is_linked = true;
-      playerData.data.discord_id = body.discord_id;
-      playerData.data.discord_username = body.discord_username;
-      updatePlayerData(player, playerData);
-      setPlayerScore(player, "Mats", body.balance);
+      const { mats, huh, discord_id, discord_username } = body.data;
 
+      updatePlayerData(player, "is_linked", true);
+      updatePlayerData(player, "discord_id", discord_id);
+      updatePlayerData(player, "discord_username", discord_username);
+      setPlayerScore(player, "Mats", mats);
+      setPlayerScore(player, "Huh", huh);
       showActionBar(player, "§aAccount Linked Successfully!");
+
+      console.log(
+        `[Linked] ${player.nameTag} | is_linked: true | discord_id: ${discord_id} | discord_username: ${discord_username} | Mats: ${mats} | Huh: ${huh}`
+      );
     } else {
       showActionBar(player, `§c${body.message}`);
       auth(player, "§cInvalid Token!");

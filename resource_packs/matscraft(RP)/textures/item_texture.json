@@ -6,6 +6,9 @@
     "matsphone": {
       "textures": "textures/items/matsphone.png"
     },
+    "huh": {
+      "textures": "textures/items/huh.png"
+    },
     "nanndo_pickaxe": {
       "textures": "textures/items/pickaxe/nando.png"
     },

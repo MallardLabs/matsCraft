@@ -8,7 +8,7 @@ import { world } from "@minecraft/server";
 import httpReq from "../lib/httpReq";
 import { getPlayerData } from "../utils/playerUtils";
 import genSecret from "../lib/genSecret";
-
+import log from "../utils/logger";
 const pickAxeAbility = [
   {
     typeId: "matscraft:nanndo_pickaxe",
@@ -38,43 +38,35 @@ const pickAxeAbility = [
 blockBreak.listen((data, actions) => {
   const { player, blockId, location, toolTypeId } = data;
   const playerData = getPlayerData(player);
-
+ 
   if (!playerData || !playerData.data.is_linked) {
     actions.restore();
     actions.removeDropItem();
     return;
   }
-
-  // Only handle blocks that include "matscraft"
-  const isMatscraftBlock = blockId.includes("matscraft");
-  if (!isMatscraftBlock) {
-    actions.removeDropItem();
-    return;
-  }
-
   const pickAxe = pickAxeAbility.find((p) => p.typeId === toolTypeId);
 
-  // If no matching pickaxe or block not allowed, prevent drop
-  if (!pickAxe || !pickAxe.allowed.includes(blockId)) {
-    actions.removeDropItem();
-    return;
+  if (blockId.includes("matscraft:")) {
+    if (!pickAxe || !pickAxe.allowed.includes(blockId)) {
+      actions.removeDropItem();
+     
+    }
+    const blockData = createBlockData(playerData.xuid, blockId, location, toolTypeId);
+    storePendingBlock(blockData);
   }
-
-  // All checks passed, store the block data
-  const blockData = createBlockData(playerData.xuid, blockId, location);
-  storePendingBlock(blockData);
 });
 
-const createBlockData = (xuid: number, blockName: string, location: any) => {
+const createBlockData = (xuid: number, blockName: string, location: any, toolTypeId: any) => {
   return {
     hash: generateRandomString(),
     minecraft_id: xuid,
-    block: blockName.replace("matscraft:", ""),
+    block_name: blockName.replace("matscraft:", ""),
     location: {
       x: location.x,
       y: location.y,
       z: location.z,
     },
+    pickaxe: toolTypeId.replace("matscraft:", ""),
     mined_at: new Date().toISOString(),
   };
 };
@@ -92,11 +84,10 @@ const storePendingBlock = async (data: any) => {
   }
 
   parsed.push(data);
-  console.log(parsed.length);
   if (parsed.length >= 10) {
     await updateBlock(parsed);
   } else {
-    world.setDynamicProperty("pendingBlock", JSON.stringify(parsed)); // Update local store
+    world.setDynamicProperty("pendingBlock", JSON.stringify(parsed));
   }
 };
 const updateBlock = async (data: any) => {
@@ -107,19 +98,18 @@ const updateBlock = async (data: any) => {
       body: JSON.stringify(data),
       headers: {
         "Content-Type": "application/json",
-        matscraft_token: genSecret(),
+        "matscraft-secret": genSecret(),
       },
     });
 
     if (response.status === 200) {
-      console.info("Successfully saved blocks to database");
+      log.info("onBlockBreak",`Successfully saved ${data.length} blocks to database`);
 
       world.setDynamicProperty("pendingBlock", JSON.stringify([]));
     } else {
       console.error(
         `Failed to save blocks: ${response.status} - ${response.body}`
       );
-      // Save back to pending if failed
       world.setDynamicProperty("pendingBlock", JSON.stringify(data));
     }
   } catch (error: any) {

@@ -1,5 +1,6 @@
 import { world } from "@minecraft/server";
 import httpReq from "../lib/httpReq";
+import { get } from "http";
 
 export const getPlayerScore = (player: any, objectiveName: string) => {
   const objective = world.scoreboard.getObjective(objectiveName) || null;
@@ -64,13 +65,24 @@ export async function getXUID(player: any): Promise<number | null> {
 }
 
 export const getPlayerData = (player?: any) => {
-  const data = player.getDynamicProperty("playerData");
-  if (data) {
-    return JSON.parse(data);
-  }
-  return null;
+  const xuid = player.getDynamicProperty("xuid");
+  const discord_id = player.getDynamicProperty("discord_id");
+  const discord_username = player.getDynamicProperty("discord_username");
+  const is_linked = player.getDynamicProperty("is_linked");
+  return {
+    xuid: xuid ? xuid : null,
+    data: {
+      is_linked: is_linked ? true : false,
+      discord_id: discord_id ? discord_id : null,
+      discord_username: discord_username ? discord_username : null,
+    },
+  };
 };
 
-export const updatePlayerData = (player?: any, playerData?: any) => {
-  player.setDynamicProperty("playerData", JSON.stringify(playerData));
+export const updatePlayerData = (
+  player?: any,
+  type?: string | number,
+  value?: string | number | boolean | null
+) => {
+  player.setDynamicProperty(type, value);
 };

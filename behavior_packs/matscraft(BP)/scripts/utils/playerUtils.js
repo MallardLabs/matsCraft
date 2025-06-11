@@ -49,12 +49,19 @@ export async function getXUID(player) {
     }
 }
 export const getPlayerData = (player) => {
-    const data = player.getDynamicProperty("playerData");
-    if (data) {
-        return JSON.parse(data);
-    }
-    return null;
+    const xuid = player.getDynamicProperty("xuid");
+    const discord_id = player.getDynamicProperty("discord_id");
+    const discord_username = player.getDynamicProperty("discord_username");
+    const is_linked = player.getDynamicProperty("is_linked");
+    return {
+        xuid: xuid ? xuid : null,
+        data: {
+            is_linked: is_linked ? true : false,
+            discord_id: discord_id ? discord_id : null,
+            discord_username: discord_username ? discord_username : null,
+        },
+    };
 };
-export const updatePlayerData = (player, playerData) => {
-    player.setDynamicProperty("playerData", JSON.stringify(playerData));
+export const updatePlayerData = (player, type, value) => {
+    player.setDynamicProperty(type, value);
 };

@@ -22,23 +22,23 @@ const showDashboard = async (player) => {
         }
         if (res.selection === 3) {
             const playerData = getPlayerData(player);
-            const discordId = playerData.data.discord_id;
-            if (discordId) {
+            const minecraft_id = playerData.xuid;
+            if (minecraft_id) {
                 const response = await httpReq.request({
-                    method: "GET",
-                    url: `${CONFIG.LOGOUT}/${discordId}/logout`,
-                    body: JSON.stringify({ discord_id: discordId }),
+                    method: "DELETE",
+                    url: `${CONFIG.LOGOUT}/${minecraft_id}/logout`,
                     headers: {
                         "Content-Type": "application/json",
-                        matscraft_token: genSecret(),
+                        "matscraft-secret": genSecret(),
                     },
                 });
+                console.log(`Status: ${response.status}, Response: ${response.body}`);
                 if (response.status === 200) {
                     setPlayerScore(player, "Mats", 0);
-                    playerData.data.is_linked = false;
-                    playerData.data.discord_id = null;
-                    playerData.data.discord_username = null;
-                    updatePlayerData(player, playerData);
+                    setPlayerScore(player, "Huh", 0);
+                    updatePlayerData(player, "is_linked", false);
+                    updatePlayerData(player, "discord_id", null);
+                    updatePlayerData(player, "discord_username", null);
                 }
             }
         }

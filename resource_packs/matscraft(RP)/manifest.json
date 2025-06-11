@@ -3,8 +3,8 @@
   "header": {
     "name": "matscraft",
     "description": "matscraft Resource Pack",
-    "uuid": "bd1d60be-cb85-4e34-b351-7eb799587a70",
-    "version": [1, 4, 1],
+    "uuid": "f29f689c-db7a-4412-a79b-16cc4b0d5d78",
+    "version": [1, 4, 2],
     "min_engine_version": [1, 16, 0]
   },
   "metadata": {

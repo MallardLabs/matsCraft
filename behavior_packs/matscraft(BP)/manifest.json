@@ -3,8 +3,8 @@
   "header": {
     "name": "matscraft",
     "description": "matscraft Behavior Pack",
-    "uuid": "9ca18b3a-0722-4e97-a768-2e9bf6cc2395",
-    "version": [1, 4, 1],
+    "uuid": "67835f5d-c9e3-48ef-b6b8-d6a1a8f96484",
+    "version": [1, 4, 2],
     "min_engine_version": [1, 16, 0]
   },
   "metadata": {

@@ -1,4 +1,4 @@
-import { world } from "@minecraft/server";
+import { world, Player } from "@minecraft/server";
 import { initialize as initializeScoreboard } from "../scoreboard/main";
 import {
   getXUID,
@@ -11,80 +11,98 @@ import loginAlert from "../gui/loginAlert";
 import httpReq from "../lib/httpReq";
 import CONFIG from "../config/config";
 import genSecret from "../lib/genSecret";
+import log from "../utils/logger";
 initializeScoreboard();
 
 world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
+  giveDefaultItem(player);
+
   const playerData = getPlayerData(player);
-  setDefaultItem(player);
-
   if (initialSpawn) {
-    await handleInitialSpawn(player, playerData);
-  }
+    console.log(
+      `Player ${player.nameTag} joined the server with data:`,
+      JSON.stringify(playerData)
+    );
 
-  if (!playerData?.data?.is_linked) {
-    showLoginAlertWithDelay(player);
+    await handleInitialSpawn(player);
+
+    if (!playerData.xuid) {
+      console.log(`Player ${player.nameTag} has no XUID. Fetching...`);
+      const xuid = await getXUID(player);
+      updatePlayerData(player, "xuid", xuid);
+      console.log(`Player ${player.nameTag} XUID set to: ${xuid}`);
+      await handleInitialSpawn(player);
+    }
   }
 });
 
-async function handleInitialSpawn(player: any, playerData: any) {
-  if (!playerData) {
-    await initializeUnlinkedPlayer(player);
-    return;
+async function handleInitialSpawn(player: Player) {
+  const playerData = getPlayerData(player);
+
+  if (!playerData?.data?.is_linked) {
+    console.log(
+      `Player ${player.nameTag} is not linked. Showing login alert...`
+    );
+    setPlayerScore(player, "Mats", 0);
+    setPlayerScore(player, "Huh", 0);
+    return showLoginAlertWithDelay(player);
   }
 
-  const xuid = playerData.xuid;
-  console.log(`Syncing player data for ${player.nameTag} (xuid: ${xuid})`);
-
-  const data = await fetchPlayerBalance(xuid);
-  const body = JSON.parse(data.body);
-  if (!body.is_verified || body?.message === "User not found") {
-    await resetUnlinkedPlayer(player);
-    return;
+  const response = await fetchPlayerData(playerData.xuid);
+  console.log(response.body);
+  if (response.status !== 200) {
+    console.log(
+      `Player ${player.nameTag} not found in database. Resetting data...`
+    );
+    resetPlayerData(player);
+    return showLoginAlertWithDelay(player);
   }
-  initializePlayerData(player, body);
+
+  const body = JSON.parse(response.body);
+  console.log(response)
+  if (!body.is_verified) {
+    console.log(
+      `Player ${player.nameTag} is not verified. Showing login alert...`
+    );
+    setPlayerScore(player, "Mats", 0);
+    setPlayerScore(player, "Huh", 0);
+    updatePlayerData(player, "discord_id", null);
+    updatePlayerData(player, "discord_username", null);
+    updatePlayerData(player, "is_linked", false);
+
+    return showLoginAlertWithDelay(player);
+  }
+  log.info("Sync Player Data",`\n\n========== Syncing ${player.nameTag} Data ==========\n\nLinked: ${body.is_verified}\nDiscord ID: ${body.discord_id}\nDiscord Username: ${body.discord_username}\nmats: ${body.mats}\nhuh: ${body.huh}\n\n========== Finished Syncing ${player.nameTag} Data ==========`);
+  updatePlayerData(player, "is_linked", true);
+  updatePlayerData(player, "discord_id", body.discord_id);
+  updatePlayerData(player, "discord_username", body.discord_username);
+  setPlayerScore(player, "Mats", body.mats);
+  setPlayerScore(player, "Huh", body.huh);
 }
 
-async function initializeUnlinkedPlayer(player: any) {
-  console.log(`No player data found for ${player.nameTag}`);
-  const xuid = await getXUID(player);
-  updatePlayerData(player, { xuid, data: { is_linked: false } });
-}
-
-async function resetUnlinkedPlayer(player: any) {
-  const xuid = await getXUID(player);
-  setPlayerScore(player, "Mats", 0);
-  updatePlayerData(player, { xuid, data: { is_linked: false } });
-}
-
-async function fetchPlayerBalance(xuid: number) {
+async function fetchPlayerData(xuid: string | number) {
   return httpReq.request({
     method: "GET",
-    url: `${CONFIG.GET_BALANCE}/${xuid}`,
+    url: `${CONFIG.GET_USER_DATA}/${xuid}`,
     headers: {
       "Content-Type": "application/json",
-      matscraft_token: genSecret(),
+      "matscraft-secret": genSecret(),
     },
-  });
-}
-function initializePlayerData(player: any, data: any) {
-  setPlayerScore(player, "Mats", data.balance);
-  updatePlayerData(player, {
-    xuid: data.xuid,
-    data: {
-      is_linked: true,
-      discord_username: data.discord_username,
-      discord_id: data.discord_id,
-    },
-  });
-}
-function showLoginAlertWithDelay(player: any) {
-  wait(200).then(() => {
-    loginAlert(player);
   });
 }
 
-// Set default item
-const setDefaultItem = (player: any) => {
+function resetPlayerData(player: Player) {
+  setPlayerScore(player, "Mats", 0);
+  updatePlayerData(player, "is_linked", false);
+  updatePlayerData(player, "discord_id", null);
+  updatePlayerData(player, "discord_username", null);
+}
+
+function giveDefaultItem(player: Player) {
   player.runCommandAsync(`clear @s matsphone:matsphone`);
   player.runCommandAsync(`give @s matsphone:matsphone 1`);
-};
+}
+
+function showLoginAlertWithDelay(player: Player) {
+  wait(200).then(() => loginAlert(player));
+}

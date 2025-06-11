@@ -24,6 +24,7 @@ const ScoreboardDisplay: ScoreboardConfig = {
     "§eLevel: §r{PlayerLevel}",
     "§eXP: §r{PlayerXP}",
     "§eMats: §r FormatMoney(Scoreboard(Mats))",
+    "§eHuh: §r FormatMoney(Scoreboard(Huh))",
     "§eOnline: §r{TotalPlayer} / 1000",
   ],
 };

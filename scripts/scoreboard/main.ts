@@ -1,4 +1,10 @@
-import { world, Player, GameMode, system, EntityDamageSource } from "@minecraft/server";
+import {
+  world,
+  Player,
+  GameMode,
+  system,
+  EntityDamageSource,
+} from "@minecraft/server";
 import { Scoreboard } from "./Scoreboard.js";
 import { DelayAnimation, ScoreboardDisplay } from "./Configuration";
 import Restful from "./Restful.js";
@@ -20,35 +26,66 @@ export const initialize = (): void => {
         continue;
       }
 
-      const ScoreboardData = getConfigMode() ? getConfiguration() : ScoreboardDisplay;
+      const ScoreboardData = getConfigMode()
+        ? getConfiguration()
+        : ScoreboardDisplay;
       const DateNow = new Date();
       const playTime = Date.now() - (playerPlaytime[player.name] ?? Date.now());
       const totalPlayTime = TotalPlaytimeDB.get(player.name) ?? 0;
-      const discordRaw = player.getDynamicProperty("playerData") as string | undefined;
+      const discordRaw = player.getDynamicProperty("discord_username") as
+        | string
+        | undefined;
 
-      const discord = discordRaw ? JSON.parse(discordRaw)?.data?.discord_username ?? "§4Not Linked" : "§4Not Linked";
+      const discord = discordRaw
+        ? discordRaw ?? "§4Not Linked"
+        : "§4Not Linked";
 
       const placeHolder: Record<string, string | number> = {
         PlayerName: player.name,
         Discord: discord,
-        PlayerHealth: Math.round(player.getComponent("minecraft:health")?.currentValue ?? 0),
+        PlayerHealth: Math.round(
+          player.getComponent("minecraft:health")?.currentValue ?? 0
+        ),
         PlayerLevel: player.level,
         PlayerXP: player.getTotalXp(),
         PosX: Math.floor(player.location.x),
         PosY: Math.floor(player.location.y),
         PosZ: Math.floor(player.location.z),
-        PlayerRanks: player.nameTag.substring(0, player.nameTag.length - (player.name.length + 1)) || "None.",
+        PlayerRanks:
+          player.nameTag.substring(
+            0,
+            player.nameTag.length - (player.name.length + 1)
+          ) || "None.",
         TotalPlayer: world.getAllPlayers().length,
         Gamemode: capitalize(player.getGameMode()),
-        Dimension: capitalize(player.dimension.id.split(":")[1].replace("_", " ")),
+        Dimension: capitalize(
+          player.dimension.id.split(":")[1].replace("_", " ")
+        ),
         Year: DateNow.getFullYear(),
         Month: DateNow.getMonth() + 1,
         Date: DateNow.getDate(),
         Hours: DateNow.getHours(),
         Minutes: DateNow.getMinutes(),
         Seconds: DateNow.getSeconds(),
-        LocaleDate: `${DateNow.getDate()} ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][DateNow.getMonth()]} ${DateNow.getFullYear()}`,
-        LocaleTime: `${twoDigits(DateNow.getHours())}:${twoDigits(DateNow.getMinutes())}`,
+        LocaleDate: `${DateNow.getDate()} ${
+          [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ][DateNow.getMonth()]
+        } ${DateNow.getFullYear()}`,
+        LocaleTime: `${twoDigits(DateNow.getHours())}:${twoDigits(
+          DateNow.getMinutes()
+        )}`,
         WorldDay: world.getDay(),
         TimeOfDay: world.getTimeOfDay(),
         TPS: Math.floor(TPS),
@@ -72,33 +109,61 @@ export const initialize = (): void => {
       let Title: string | string[] = ScoreboardData.Title;
       if (Array.isArray(Title)) {
         const newTitle = Title.filter((t): t is string => t !== undefined);
-        const animatedTextIndex = Math.floor(Date.now() / (DelayAnimation * 1000)) % newTitle.length;
+        const animatedTextIndex =
+          Math.floor(Date.now() / (DelayAnimation * 1000)) % newTitle.length;
         Title = newTitle[animatedTextIndex];
       }
 
-      scoreBoard.setTitle(Title as string, ScoreboardData.TitleCenter, ScoreboardData.TitleLogo);
+      scoreBoard.setTitle(
+        Title as string,
+        ScoreboardData.TitleCenter,
+        ScoreboardData.TitleLogo
+      );
 
       ScoreboardData.Field.forEach((f: string | string[]) => {
-        let field = Array.isArray(f) ? f[Math.floor(Date.now() / (DelayAnimation * 1000)) % f.length] : f;
-        if (typeof field !== 'string') return;
+        let field = Array.isArray(f)
+          ? f[Math.floor(Date.now() / (DelayAnimation * 1000)) % f.length]
+          : f;
+        if (typeof field !== "string") return;
         Object.keys(placeHolder).forEach((key) => {
           field = field.replaceAll(`{${key}}`, String(placeHolder[key]));
         });
 
-        field = field.replace(/Scoreboard\((.*?)\)/g, (_: string, obj: string) => String(getScoreboard(player, obj)));
-        field = field.replace(/CalculateNumber\((.*?)\)/g, (_: string, expr: string) => {
-          try {
-            return String(eval(expr));
-          } catch {
-            return "Error calculate.";
+        field = field.replace(
+          /Scoreboard\((.*?)\)/g,
+          (_: string, obj: string) => String(getScoreboard(player, obj))
+        );
+        field = field.replace(
+          /CalculateNumber\((.*?)\)/g,
+          (_: string, expr: string) => {
+            try {
+              return String(eval(expr));
+            } catch {
+              return "Error calculate.";
+            }
           }
-        });
-        field = field.replace(/FormatMoney\((.*?)\)/g, (_: string, num: string) => {
-          const value = Number(num) || 0;
-          return value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
-        });
-        field = field.replace(/RomanNumeral\((.*?)\)/g, (_: string, num: string) => toRomanNumeral(Number(num) || 0));
-        field = field.replace(/Capitalize\((.*?)\)/g, (_: string, str: string) => capitalize(str));
+        );
+        field = field.replace(
+          /FormatMoney\((.*?)\)/g,
+          (_: string, num: string) => {
+            const value = Number(num) || 0;
+            const formatted = value
+              .toFixed(2)
+              .replace(/\d(?=(\d{3})+\.)/g, "$&,");
+            return formatted.endsWith(".00")
+              ? formatted.slice(0, -3)
+              : formatted;
+          }
+        );
+
+        field = field.replace(
+          /RomanNumeral\((.*?)\)/g,
+          (_: string, num: string) => toRomanNumeral(Number(num) || 0)
+        );
+        field = field.replace(
+          /Capitalize\((.*?)\)/g,
+          (_: string, str: string) => capitalize(str)
+        );
 
         scoreBoard.addField(field);
       });
@@ -120,7 +185,19 @@ const getScoreboard = (player: Player, objectiveId: string): number => {
 
 const toRomanNumeral = (num: number): string => {
   const lookup: Record<string, number> = {
-    M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90, L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1
+    M: 1000,
+    CM: 900,
+    D: 500,
+    CD: 400,
+    C: 100,
+    XC: 90,
+    L: 50,
+    XL: 40,
+    X: 10,
+    IX: 9,
+    V: 5,
+    IV: 4,
+    I: 1,
   };
   let roman = "";
   for (const i in lookup) {
@@ -150,7 +227,12 @@ system.runInterval(() => {
 let lastTick = Date.now();
 
 world.afterEvents.worldInitialize.subscribe(() => {
-  world.getDimension("overworld").runCommandAsync("scoreboard objectives add Mats dummy");
+  world
+    .getDimension("overworld")
+    .runCommandAsync("scoreboard objectives add Mats dummy");
+  world
+    .getDimension("overworld")
+    .runCommandAsync("scoreboard objectives add Huh dummy");
   for (const p of world.getAllPlayers()) {
     playerPlaytime[p.name] = Date.now();
     playerSpawned[p.name] = true;
@@ -195,17 +277,28 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
     source.damagingEntity.runCommandAsync("scoreboard players add @s kills 1");
 
   if (source.damagingEntity instanceof Player && hurtEntity instanceof Player)
-    source.damagingEntity.runCommandAsync("scoreboard players add @s killsPlayers 1");
+    source.damagingEntity.runCommandAsync(
+      "scoreboard players add @s killsPlayers 1"
+    );
 });
 
 world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
-  if (source instanceof Player && itemStack.typeId === "betterscoreboard:configuration") {
+  if (
+    source instanceof Player &&
+    itemStack.typeId === "betterscoreboard:configuration"
+  ) {
     source.runCommand("scriptevent betterscoreboard:configuration");
   }
 });
 
-Restful.listen("betterscoreboard-installed", () => ({ installed: true, version: Version }));
+Restful.listen("betterscoreboard-installed", () => ({
+  installed: true,
+  version: Version,
+}));
 
 function capitalize(str: string): string {
-  return str.split(" ").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+  return str
+    .split(" ")
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(" ");
 }

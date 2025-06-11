@@ -1,4 +1,4 @@
-import { world, Player, system } from "@minecraft/server";
+import { world, Player, system, } from "@minecraft/server";
 import { Scoreboard } from "./Scoreboard.js";
 import { DelayAnimation, ScoreboardDisplay } from "./Configuration";
 import Restful from "./Restful.js";
@@ -16,12 +16,16 @@ export const initialize = () => {
                 player.onScreenDisplay.setTitle(" ");
                 continue;
             }
-            const ScoreboardData = getConfigMode() ? getConfiguration() : ScoreboardDisplay;
+            const ScoreboardData = getConfigMode()
+                ? getConfiguration()
+                : ScoreboardDisplay;
             const DateNow = new Date();
             const playTime = Date.now() - (playerPlaytime[player.name] ?? Date.now());
             const totalPlayTime = TotalPlaytimeDB.get(player.name) ?? 0;
-            const discordRaw = player.getDynamicProperty("playerData");
-            const discord = discordRaw ? JSON.parse(discordRaw)?.data?.discord_username ?? "§4Not Linked" : "§4Not Linked";
+            const discordRaw = player.getDynamicProperty("discord_username");
+            const discord = discordRaw
+                ? discordRaw ?? "§4Not Linked"
+                : "§4Not Linked";
             const placeHolder = {
                 PlayerName: player.name,
                 Discord: discord,
@@ -41,7 +45,20 @@ export const initialize = () => {
                 Hours: DateNow.getHours(),
                 Minutes: DateNow.getMinutes(),
                 Seconds: DateNow.getSeconds(),
-                LocaleDate: `${DateNow.getDate()} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][DateNow.getMonth()]} ${DateNow.getFullYear()}`,
+                LocaleDate: `${DateNow.getDate()} ${[
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                ][DateNow.getMonth()]} ${DateNow.getFullYear()}`,
                 LocaleTime: `${twoDigits(DateNow.getHours())}:${twoDigits(DateNow.getMinutes())}`,
                 WorldDay: world.getDay(),
                 TimeOfDay: world.getTimeOfDay(),
@@ -69,8 +86,10 @@ export const initialize = () => {
             }
             scoreBoard.setTitle(Title, ScoreboardData.TitleCenter, ScoreboardData.TitleLogo);
             ScoreboardData.Field.forEach((f) => {
-                let field = Array.isArray(f) ? f[Math.floor(Date.now() / (DelayAnimation * 1000)) % f.length] : f;
-                if (typeof field !== 'string')
+                let field = Array.isArray(f)
+                    ? f[Math.floor(Date.now() / (DelayAnimation * 1000)) % f.length]
+                    : f;
+                if (typeof field !== "string")
                     return;
                 Object.keys(placeHolder).forEach((key) => {
                     field = field.replaceAll(`{${key}}`, String(placeHolder[key]));
@@ -86,7 +105,12 @@ export const initialize = () => {
                 });
                 field = field.replace(/FormatMoney\((.*?)\)/g, (_, num) => {
                     const value = Number(num) || 0;
-                    return value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+                    const formatted = value
+                        .toFixed(2)
+                        .replace(/\d(?=(\d{3})+\.)/g, "$&,");
+                    return formatted.endsWith(".00")
+                        ? formatted.slice(0, -3)
+                        : formatted;
                 });
                 field = field.replace(/RomanNumeral\((.*?)\)/g, (_, num) => toRomanNumeral(Number(num) || 0));
                 field = field.replace(/Capitalize\((.*?)\)/g, (_, str) => capitalize(str));
@@ -107,7 +131,19 @@ const getScoreboard = (player, objectiveId) => {
 };
 const toRomanNumeral = (num) => {
     const lookup = {
-        M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90, L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1
+        M: 1000,
+        CM: 900,
+        D: 500,
+        CD: 400,
+        C: 100,
+        XC: 90,
+        L: 50,
+        XL: 40,
+        X: 10,
+        IX: 9,
+        V: 5,
+        IV: 4,
+        I: 1,
     };
     let roman = "";
     for (const i in lookup) {
@@ -136,7 +172,12 @@ system.runInterval(() => {
 }, 50);
 let lastTick = Date.now();
 world.afterEvents.worldInitialize.subscribe(() => {
-    world.getDimension("overworld").runCommandAsync("scoreboard objectives add Mats dummy");
+    world
+        .getDimension("overworld")
+        .runCommandAsync("scoreboard objectives add Mats dummy");
+    world
+        .getDimension("overworld")
+        .runCommandAsync("scoreboard objectives add Huh dummy");
     for (const p of world.getAllPlayers()) {
         playerPlaytime[p.name] = Date.now();
         playerSpawned[p.name] = true;
@@ -179,11 +220,18 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
         source.damagingEntity.runCommandAsync("scoreboard players add @s killsPlayers 1");
 });
 world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
-    if (source instanceof Player && itemStack.typeId === "betterscoreboard:configuration") {
+    if (source instanceof Player &&
+        itemStack.typeId === "betterscoreboard:configuration") {
         source.runCommand("scriptevent betterscoreboard:configuration");
     }
 });
-Restful.listen("betterscoreboard-installed", () => ({ installed: true, version: Version }));
+Restful.listen("betterscoreboard-installed", () => ({
+    installed: true,
+    version: Version,
+}));
 function capitalize(str) {
-    return str.split(" ").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+    return str
+        .split(" ")
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ");
 }
