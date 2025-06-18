@@ -4,7 +4,7 @@
     "name": "matscraft",
     "description": "matscraft Behavior Pack",
     "uuid": "67835f5d-c9e3-48ef-b6b8-d6a1a8f96484",
-    "version": [1, 4, 2],
+    "version": [1, 4, 6],
     "min_engine_version": [1, 16, 0]
   },
   "metadata": {
