@@ -229,10 +229,10 @@ let lastTick = Date.now();
 world.afterEvents.worldInitialize.subscribe(() => {
   world
     .getDimension("overworld")
-    .runCommandAsync("scoreboard objectives add Mats dummy");
+    .runCommand("scoreboard objectives add Mats dummy");
   world
     .getDimension("overworld")
-    .runCommandAsync("scoreboard objectives add Huh dummy");
+    .runCommand("scoreboard objectives add Huh dummy");
   for (const p of world.getAllPlayers()) {
     playerPlaytime[p.name] = Date.now();
     playerSpawned[p.name] = true;
@@ -263,21 +263,21 @@ world.afterEvents.playerLeave.subscribe(({ playerName }) => {
 world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
   const source = damageSource as EntityDamageSource;
   const overworld = world.getDimension("overworld");
-  overworld.runCommandAsync("scoreboard objectives add deaths dummy");
-  overworld.runCommandAsync("scoreboard objectives add kills dummy");
-  overworld.runCommandAsync("scoreboard objectives add killsPlayers dummy");
+  overworld.runCommand("scoreboard objectives add deaths dummy");
+  overworld.runCommand("scoreboard objectives add kills dummy");
+  overworld.runCommand("scoreboard objectives add killsPlayers dummy");
 
   const health = hurtEntity.getComponent("minecraft:health");
   if (!health || health.currentValue > 0) return;
 
   if (hurtEntity instanceof Player)
-    hurtEntity.runCommandAsync("scoreboard players add @s deaths 1");
+    hurtEntity.runCommand("scoreboard players add @s deaths 1");
 
   if (source.damagingEntity instanceof Player)
-    source.damagingEntity.runCommandAsync("scoreboard players add @s kills 1");
+    source.damagingEntity.runCommand("scoreboard players add @s kills 1");
 
   if (source.damagingEntity instanceof Player && hurtEntity instanceof Player)
-    source.damagingEntity.runCommandAsync(
+    source.damagingEntity.runCommand(
       "scoreboard players add @s killsPlayers 1"
     );
 });

@@ -8,11 +8,12 @@ import {
   setAutoRemoveItems,
 } from "./events/itemPickup";
 import log from "./utils/logger";
+import {world} from "@minecraft/server";
 
 startItemPickupMonitoring();
 
-setAutoRemoveItems(["matscraft:mats", "matscraft:huh"]);
-log.info("CONFIG",`BASE_URL=${CONFIG.BASE_URL} | SECRET_KEY=${CONFIG.SECRET_KEY}`
+setAutoRemoveItems(["matscraft:mats", "matscraft:huh","matscraft:common_mats_ore","matscraft:uncommon_mats_ore","matscraft:rare_mats_ore","matscraft:epic_mats_ore","matscraft:legendary_mats_ore"]);
+log.info(
+  "CONFIG",
+  `BASE_URL=${CONFIG.BASE_URL} | SECRET_KEY=${CONFIG.SECRET_KEY}`
 );
-
-
