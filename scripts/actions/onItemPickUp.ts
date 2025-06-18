@@ -240,3 +240,4 @@ onItemPickup(async ({ player, item }) => {
     console.error("[ItemPickup] Unexpected error:", error);
   }
 });
+export {PendingUpdatesManager}
