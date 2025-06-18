@@ -1,4 +1,4 @@
-import { world, Block, Player, Dimension } from "@minecraft/server";
+import { world, Block, Player, Dimension, ItemStack } from "@minecraft/server";
 
 type BlockBreakData = {
   player: Player;
@@ -7,16 +7,21 @@ type BlockBreakData = {
   dimension: Dimension;
   toolTypeId?: string;
 };
-
+type DropItemEntry = {
+  id: string;
+  min: number;
+  max: number;
+};
 type BlockBreakActions = {
-
   restore(): void;
-
-
+  dropItem(entry: DropItemEntry[]): void;
   removeDropItem(): void;
 };
 
-type BlockBreakCallback = (data: BlockBreakData, actions: BlockBreakActions) => void;
+type BlockBreakCallback = (
+  data: BlockBreakData,
+  actions: BlockBreakActions
+) => void;
 
 class BlockBreak {
   private listeners: BlockBreakCallback[] = [];
@@ -26,7 +31,9 @@ class BlockBreak {
   }
 
   private subscribeToEvents(): void {
-    world.afterEvents.playerBreakBlock.subscribe(this.handleBlockBreak.bind(this));
+    world.afterEvents.playerBreakBlock.subscribe(
+      this.handleBlockBreak.bind(this)
+    );
   }
 
   private handleBlockBreak(event: any): void {
@@ -57,12 +64,22 @@ class BlockBreak {
       },
       removeDropItem() {
         try {
-          dimension.runCommand(
-            `kill @e[type=item,x=${location.x},y=${location.y},z=${location.z},r=2]`
-          );
+          world
+            .getDimension("overworld")
+            .runCommand(
+              `kill @e[type=item,x=${location.x},y=${location.y},z=${location.z},r=2]`
+            );
         } catch (error: any) {
           console.error(`Failed to remove dropped items: ${error.message}`);
         }
+      },
+      dropItem(entry) {
+        const item = entry[Math.floor(Math.random() * entry.length)];
+        const low = Math.min(item.min, item.max);
+        const high = Math.max(item.min, item.max);
+        const amount = Math.floor(Math.random() * (high - low + 1)) + low;
+        const selectedItem = new ItemStack(item.id, amount);
+        dimension.spawnItem(selectedItem, location);
       },
     };
 

@@ -1,4 +1,4 @@
-import { world } from "@minecraft/server";
+import { world, ItemStack } from "@minecraft/server";
 class BlockBreak {
     constructor() {
         this.listeners = [];
@@ -27,11 +27,21 @@ class BlockBreak {
             },
             removeDropItem() {
                 try {
-                    dimension.runCommand(`kill @e[type=item,x=${location.x},y=${location.y},z=${location.z},r=2]`);
+                    world
+                        .getDimension("overworld")
+                        .runCommand(`kill @e[type=item,x=${location.x},y=${location.y},z=${location.z},r=2]`);
                 }
                 catch (error) {
                     console.error(`Failed to remove dropped items: ${error.message}`);
                 }
+            },
+            dropItem(entry) {
+                const item = entry[Math.floor(Math.random() * entry.length)];
+                const low = Math.min(item.min, item.max);
+                const high = Math.max(item.min, item.max);
+                const amount = Math.floor(Math.random() * (high - low + 1)) + low;
+                const selectedItem = new ItemStack(item.id, amount);
+                dimension.spawnItem(selectedItem, location);
             },
         };
         for (const listener of this.listeners) {
