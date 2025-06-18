@@ -23,15 +23,15 @@
       }
     },
     "distribution": {
-      "iterations": 3,
+      "iterations": 4,
       "coordinate_eval_order": "zyx",
       "x": {
         "distribution": "uniform",
         "extent": [0, 16]
       },
       "y": {
-        "distribution": "uniform",
-        "extent": [0, 48]
+        "distribution": "triangle",
+        "extent": [-64, 16]
       },
       "z": {
         "distribution": "uniform",

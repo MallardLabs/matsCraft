@@ -4,7 +4,7 @@
     "description": {
       "identifier": "matscraft:uncommon_mats_ore_feature"
     },
-    "count": 15,
+    "count": 8,
     "replace_rules": [
       {
         "places_block": "matscraft:uncommon_mats_ore",
