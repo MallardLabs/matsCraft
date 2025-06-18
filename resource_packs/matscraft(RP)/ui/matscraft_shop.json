@@ -60,7 +60,7 @@
       },
       {
         "binding_type": "view",
-        "source_property_name": "(#title_text = 'MATSCRAFT')",
+        "source_property_name": "(#title_text = 'SHOP')",
         "target_property_name": "#visible"
       }
     ]
