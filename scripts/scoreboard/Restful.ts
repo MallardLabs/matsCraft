@@ -42,7 +42,7 @@ Restful.request = async (path, data: Record<string, unknown> = {}, timeout = 10)
     }
   });
 
-  await Dimension.runCommandAsync(`scriptevent get:${path} ${JSON.stringify(data)}`);
+  await Dimension.runCommand(`scriptevent get:${path} ${JSON.stringify(data)}`);
 
   return new Promise((resolve) => {
     let done = false;

@@ -29,7 +29,7 @@ Restful.request = async (path, data = {}, timeout = 10) => {
             system.afterEvents.scriptEventReceive.unsubscribe(getService);
         }
     });
-    await Dimension.runCommandAsync(`scriptevent get:${path} ${JSON.stringify(data)}`);
+    await Dimension.runCommand(`scriptevent get:${path} ${JSON.stringify(data)}`);
     return new Promise((resolve) => {
         let done = false;
         system.runTimeout(() => (done = true), 20 * timeout);

