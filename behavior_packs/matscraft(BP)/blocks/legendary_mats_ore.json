@@ -26,7 +26,8 @@
         }
       },
       "minecraft:map_color": "#ffffff",
-      "minecraft:loot": "loot_tables/blocks/legendary_mats_ore.json"
+      "minecraft:loot": "loot_tables/empty.json"
+      
     }
   }
 }

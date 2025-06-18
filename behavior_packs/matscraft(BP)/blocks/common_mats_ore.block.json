@@ -26,7 +26,7 @@
         }
       },
       "minecraft:map_color": "#ffffff",
-      "minecraft:loot": "loot_tables/blocks/common_mats_ore.json"
+      "minecraft:loot": "loot_tables/empty.json"
     }
   }
 }
