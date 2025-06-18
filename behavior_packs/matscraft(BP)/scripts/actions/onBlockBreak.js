@@ -4,7 +4,7 @@ import generateRandomString from "../utils/genRandomStr";
 import CONFIG from "../config/config";
 import { world } from "@minecraft/server";
 import httpReq from "../lib/httpReq";
-import { getPlayerData } from "../utils/playerUtils";
+import { getPlayerData, showActionBar } from "../utils/playerUtils";
 import genSecret from "../lib/genSecret";
 import log from "../utils/logger";
 const pickAxeAbility = [
@@ -33,22 +33,65 @@ const pickAxeAbility = [
     },
 ];
 blockBreak.listen((data, actions) => {
-    const { player, blockId, location, toolTypeId } = data;
+    const { player, blockId, location, toolTypeId, dimension } = data;
     const playerData = getPlayerData(player);
+    /*
+       If Player is not linked in the world, every block break activity by player it will be restored.
+       So the unlinked players will not mess up in the world
+    */
     if (!playerData || !playerData.data.is_linked) {
         actions.restore();
         actions.removeDropItem();
         return;
     }
+    // Find The Pickaxe Ability
     const pickAxe = pickAxeAbility.find((p) => p.typeId === toolTypeId);
+    //If players break block with pickaxe which doesn't match in the pickaxe ability, don't drop the item
     if (blockId.includes("matscraft:")) {
-        if (!pickAxe || !pickAxe.allowed.includes(blockId)) {
+        if (!pickAxe) {
+            return;
+        }
+        if (!pickAxe.allowed.includes(blockId)) {
             actions.removeDropItem();
         }
+        /*
+        Hopper Detector, this will detect 3x4 area to detect hopper is near in mats blocks
+        */
+        const radiusXZ = 4;
+        const rangeUp = 3;
+        const rangeDown = 4;
+        // Find hoppers in the area 3x4
+        for (let dx = -radiusXZ; dx <= radiusXZ; dx++) {
+            for (let dz = -radiusXZ; dz <= radiusXZ; dz++) {
+                for (let dy = -rangeDown; dy <= rangeUp; dy++) {
+                    const pos = {
+                        x: location.x + dx,
+                        y: location.y + dy,
+                        z: location.z + dz,
+                    };
+                    const block = dimension.getBlock(pos);
+                    if (block?.typeId.includes("hopper")) {
+                        showActionBar(player, "§cYou can't mine matsblocks near a hopper!");
+                        return;
+                    }
+                    const entities = dimension.getEntitiesAtBlockLocation(pos);
+                    for (const e of entities) {
+                        if (e.typeId === "minecraft:hopper_minecart") {
+                            showActionBar(player, "§cYou can't mine matsblocks near a hopper minecart!");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        // PASS: If all the event before is pass then drop the item.
+        actions.dropItem(CONFIG.ORE_CONFIG[blockId.replace("matscraft:", "")]);
+        // Store pending block to memory
         const blockData = createBlockData(playerData.xuid, blockId, location, toolTypeId);
         storePendingBlock(blockData);
     }
 });
+// Generate Block Data
 const createBlockData = (xuid, blockName, location, toolTypeId) => {
     return {
         hash: generateRandomString(),
@@ -81,6 +124,7 @@ const storePendingBlock = async (data) => {
         world.setDynamicProperty("pendingBlock", JSON.stringify(parsed));
     }
 };
+// Store pending block to the server
 const updateBlock = async (data) => {
     try {
         const response = await httpReq.request({
