@@ -6,9 +6,11 @@ import {
   setPlayerScore,
 } from "../utils/playerUtils";
 import { showShop } from "./shop";
+
 import httpReq from "../lib/httpReq";
 import genSecret from "../lib/genSecret";
 import CONFIG from "../config/config";
+import showTools from "./tools";
 
 const showDashboard = async (player?: any) => {
   const playerScore = await getPlayerScore(player, "Mats");
@@ -21,17 +23,19 @@ const showDashboard = async (player?: any) => {
       }\n§r§lMats: §l§r§e${formatNumber(playerScore)}`
     )
 
-    .button("Rewards", "textures/ui/promo_holiday_gift_small")
-    .button("D", "")
-    .button("Shop", "textures/ui/hammer_l")
-    .button("Logout", "textures/custom_ui/logout");
+    .button("Shop", "textures/items/bundle_red")
+    .button("Tools", "textures/ui/hammer_l")
+    .button("Logout", "textures/blocks/barrier");
 
   form.show(player).then(async (res) => {
     if (res.canceled) return;
-    if (res.selection === 2) {
+    if (res.selection === 0) {
       showShop(player);
     }
-    if (res.selection === 3) {
+    if (res.selection === 1) {
+      showTools(player);
+    }
+    if (res.selection === 2) {
       const playerData = getPlayerData(player);
       const minecraft_id = playerData.xuid;
       if (minecraft_id) {

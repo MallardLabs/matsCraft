@@ -1,6 +1,7 @@
 import { world } from "@minecraft/server";
 import { ActionFormData, ModalFormData, } from "@minecraft/server-ui";
 import { getPlayerData, getPlayerScore } from "../utils/playerUtils";
+import showMainMenu from "../gui/main";
 /**
  * Entry point: shows the main admin menu.
  */
@@ -9,6 +10,7 @@ export default function showAdminMenu(player) {
         .title("Admin Menu")
         .button("View Player Data")
         .button("Ban a Player")
+        .button("Show Dashboard")
         .show(player)
         .then((res) => {
         if (res.canceled)
@@ -19,6 +21,9 @@ export default function showAdminMenu(player) {
                 break;
             case 1:
                 showBanPlayerMenu(player);
+                break;
+            case 2:
+                showMainMenu(player);
                 break;
         }
     });

@@ -29,6 +29,7 @@ const PICKAXES = [
 ];
 export const showShop = (player) => {
     const form = new ActionFormData().title("SHOP");
+    form.body("Purchase Pickaxes");
     PICKAXES.forEach((pickaxe) => {
         form.button(pickaxe.name, pickaxe.icon);
     });
@@ -74,7 +75,7 @@ const updateBalance = async (player, amount) => {
     try {
         const response = await httpReq.request({
             method: "POST",
-            url: `${CONFIG.UPDATE_BALANCE}/${playerData.xuid}/update_balance`,
+            url: `${CONFIG.UPDATE_BALANCE}/${playerData.xuid}/update_balance?type=transaction`,
             headers: {
                 "Content-Type": "application/json",
                 "matscraft-secret": genSecret(),

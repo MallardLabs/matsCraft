@@ -6,6 +6,7 @@ import {
   ActionFormResponse,
 } from "@minecraft/server-ui";
 import { getPlayerData, getPlayerScore } from "../utils/playerUtils";
+import showMainMenu from "../gui/main";
 
 /**
  * Entry point: shows the main admin menu.
@@ -15,6 +16,7 @@ export default function showAdminMenu(player: Player) {
     .title("Admin Menu")
     .button("View Player Data")
     .button("Ban a Player")
+    .button("Show Dashboard")
     .show(player)
     .then((res: ActionFormResponse) => {
       if (res.canceled) return;
@@ -25,6 +27,9 @@ export default function showAdminMenu(player: Player) {
           break;
         case 1:
           showBanPlayerMenu(player);
+          break;
+        case 2:
+          showMainMenu(player);
           break;
       }
     });
