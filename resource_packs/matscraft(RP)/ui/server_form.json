@@ -20,7 +20,7 @@
             },
             {
               "binding_type": "view",
-              "source_property_name": "(not (#title_text = 'MATSCRAFT') and not (#title_text = 'SHOP'))",
+              "source_property_name": "(not (#title_text = 'MATSCRAFT') and not (#title_text = 'SHOP') and not (#title_text = 'TOOLS'))",
               "target_property_name": "#visible"
             }
           ]
@@ -72,7 +72,7 @@
             },
             {
               "binding_type": "view",
-              "source_property_name": "(#title_text = 'SHOP')",
+              "source_property_name": "(#title_text = 'SHOP' or #title_text = 'TOOLS')",
               "target_property_name": "#visible"
             }
           ]

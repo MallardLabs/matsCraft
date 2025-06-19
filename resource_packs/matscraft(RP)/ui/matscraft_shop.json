@@ -60,7 +60,7 @@
       },
       {
         "binding_type": "view",
-        "source_property_name": "(#title_text = 'SHOP')",
+        "source_property_name": "(#title_text = 'SHOP' or #title_text = 'TOOLS')",
         "target_property_name": "#visible"
       }
     ]
@@ -134,7 +134,7 @@
       {
         "form_body_text": {
           "type": "label",
-          "text": "Select Item To Purchase",
+          "text": "#form_text",
           "layer": 8,
           "color": [1, 1, 1],
           "anchor_from": "center",

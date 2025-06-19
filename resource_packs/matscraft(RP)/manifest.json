@@ -4,7 +4,7 @@
     "name": "matscraft",
     "description": "matscraft Resource Pack",
     "uuid": "f29f689c-db7a-4412-a79b-16cc4b0d5d78",
-    "version": [1, 5, 4],
+    "version": [1, 5, 8],
     "min_engine_version": [1, 16, 0]
   },
   "metadata": {

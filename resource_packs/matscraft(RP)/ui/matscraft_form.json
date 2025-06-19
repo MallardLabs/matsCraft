@@ -297,18 +297,28 @@
                 "collection_name": "form_buttons",
                 "controls": [
                   {
-                    "offset_button@matscraft_form.custom_button": {
-                      "$button_size": [60, 64],
-                      "$padding": [67, 40],
-                      "$button_text": "#form_button_text",
-                      "collection_index": 2
-                    }
-                  },
-                  {
-                    "offset_button@matscraft_form.custom_button": {
-                      "$button_size": [60, 64],
-                      "$padding": [70, 40],
-                      "collection_index": 3
+                    "user_pannel": {
+                      "type": "grid",
+                      "size": [148,"100%c"],
+                      "grid_dimensions": [3, 3],
+                      "grid_item_template": "matscraft_form.custom_button",
+                      "grid_fill_direction": "horizontal",
+                      "grid_rescaling_type":"horizontal",
+                      
+                      "offset": [100, 0],
+                      "anchor_from": "center",
+                      "anchor_to": "center",
+                      "factory": {
+                        "name":"buttons",
+                        "control_name": "matscraft_form.custom_button"
+                      },
+                      "collection_name": "form_buttons",
+                      "bindings": [
+                        {
+                          "binding_name": "#form_button_length",
+                          "binding_name_override": "#maximum_grid_items"
+                        }
+                      ]
                     }
                   }
                 ]
@@ -321,9 +331,9 @@
   },
 
   "custom_button": {
-    "$padding|default": [80, 80],
-    "$button_size|default": [64, 64],
-    "$icon_size|default": [32, 32],
+    "$padding|default": [44, 44],
+    "$button_size|default": [40, 40],
+    "$icon_size|default": [22, 22],
     "$default_button_texture": "textures/custom_ui/custom_bg",
     "$hover_button_texture": "textures/custom_ui/custom_bg_hover",
     "$pressed_button_texture": "textures/custom_ui/custom_bg_hover",
@@ -334,6 +344,7 @@
         "main_ui": {
           "type": "panel",
           "size": "$button_size",
+          "offset": [-6, -13],
           "controls": [
             {
               "my_form_background@matscraft_form.my_form_background": {
@@ -387,6 +398,7 @@
                       "type": "label",
                       "text": "#form_button_text",
                       "layer": 32,
+                      "font_size": "small",
                       "color": [1, 1, 1],
                       "offset": [0, -8],
                       "anchor_from": "bottom_middle",
