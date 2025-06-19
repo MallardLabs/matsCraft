@@ -9,11 +9,7 @@
       {
         "places_block": "matscraft:common_mats_ore",
         "may_replace": [
-          "minecraft:stone",
-          "minecraft:copper_ore",
-          "minecraft:coal_ore",
-          "minecraft:cobblestone",
-          "minecraft:gravel"
+          "minecraft:stone"
         ]
       }
     ]

@@ -23,7 +23,7 @@
       }
     },
     "distribution": {
-      "iterations": 4,
+      "iterations": 1,
       "coordinate_eval_order": "zyx",
       "x": {
         "distribution": "uniform",

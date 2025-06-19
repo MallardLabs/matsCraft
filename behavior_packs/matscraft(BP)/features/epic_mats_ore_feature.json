@@ -9,11 +9,7 @@
       {
         "places_block": "matscraft:epic_mats_ore",
         "may_replace": [
-          "minecraft:stone",
-          "minecraft:deepslate",
-          "minecraft:redstone_ore",
-          "minecraft:gold_ore",
-          "minecraft:diamond_ore"
+          "minecraft:stone"
         ]
       }
     ]
