@@ -78,7 +78,14 @@ export const getPlayerData = (player?: any) => {
     },
   };
 };
-
+export const setPlayerData = (
+  player?: any,
+  type?: string | number,
+  value?: string | number | boolean | null
+) => {
+  player.setDynamicProperty(type, value);
+  return player.getDynamicProperty(type);
+}
 export const updatePlayerData = (
   player?: any,
   type?: string | number,

@@ -35,11 +35,21 @@ const pickAxeAbility = [
 blockBreak.listen((data, actions) => {
     const { player, blockId, location, toolTypeId, dimension } = data;
     const playerData = getPlayerData(player);
+    if (dimension.id.includes("overworld") && location.y >= 172) {
+        console.log(location.y);
+        if (player.hasTag("admin") || player.hasTag("builder")) {
+            return;
+        }
+        actions.restore();
+    }
     /*
        If Player is not linked in the world, every block break activity by player it will be restored.
        So the unlinked players will not mess up in the world
     */
     if (!playerData || !playerData.data.is_linked) {
+        if (player.hasTag("admin")) {
+            return;
+        }
         actions.restore();
         actions.removeDropItem();
         return;
@@ -60,7 +70,7 @@ blockBreak.listen((data, actions) => {
         const radiusXZ = 4;
         const rangeUp = 3;
         const rangeDown = 4;
-        // Find hoppers in the area 3x4
+        // Find hoppers in the 3x4 area
         for (let dx = -radiusXZ; dx <= radiusXZ; dx++) {
             for (let dz = -radiusXZ; dz <= radiusXZ; dz++) {
                 for (let dy = -rangeDown; dy <= rangeUp; dy++) {

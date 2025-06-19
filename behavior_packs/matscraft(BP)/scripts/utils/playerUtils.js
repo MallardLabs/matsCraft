@@ -62,6 +62,10 @@ export const getPlayerData = (player) => {
         },
     };
 };
+export const setPlayerData = (player, type, value) => {
+    player.setDynamicProperty(type, value);
+    return player.getDynamicProperty(type);
+};
 export const updatePlayerData = (player, type, value) => {
     player.setDynamicProperty(type, value);
 };

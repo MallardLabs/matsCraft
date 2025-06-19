@@ -9,9 +9,6 @@ import genSecret from "../lib/genSecret";
 import log from "../utils/logger";
 initializeScoreboard();
 world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
-    if (player.nameTag == "rzaprr" && !player.hasTag("admin")) {
-        player.addTag("admin");
-    }
     giveDefaultItem(player);
     const playerData = getPlayerData(player);
     // Check if players is inital spawn in server. initialSpawn = offline > joined on server
@@ -29,28 +26,16 @@ world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
 });
 async function handleInitialSpawn(player) {
     const playerData = getPlayerData(player);
-    if (!playerData?.data?.is_linked) {
-        console.log(`Player ${player.nameTag} is not linked. Showing login alert...`);
-        setPlayerScore(player, "Mats", 0);
-        setPlayerScore(player, "Huh", 0);
-        return showLoginAlertWithDelay(player);
-    }
     const response = await fetchPlayerData(playerData.xuid);
-    console.log(response.body);
     if (response.status !== 200) {
         console.log(`Player ${player.nameTag} not found in database. Resetting data...`);
         resetPlayerData(player);
         return showLoginAlertWithDelay(player);
     }
     const body = JSON.parse(response.body);
-    console.log(response);
     if (!body.is_verified) {
         console.log(`Player ${player.nameTag} is not verified. Showing login alert...`);
-        setPlayerScore(player, "Mats", 0);
-        setPlayerScore(player, "Huh", 0);
-        updatePlayerData(player, "discord_id", null);
-        updatePlayerData(player, "discord_username", null);
-        updatePlayerData(player, "is_linked", false);
+        resetPlayerData(player);
         return showLoginAlertWithDelay(player);
     }
     log.info("Sync Player Data", `\n\n========== Syncing ${player.nameTag} Data ==========\n\nLinked: ${body.is_verified}\nDiscord ID: ${body.discord_id}\nDiscord Username: ${body.discord_username}\nmats: ${body.mats}\nhuh: ${body.huh}\n\n========== Finished Syncing ${player.nameTag} Data ==========`);
@@ -72,6 +57,7 @@ async function fetchPlayerData(xuid) {
 }
 function resetPlayerData(player) {
     setPlayerScore(player, "Mats", 0);
+    setPlayerScore(player, "Huh", 0);
     updatePlayerData(player, "is_linked", false);
     updatePlayerData(player, "discord_id", null);
     updatePlayerData(player, "discord_username", null);
