@@ -7,7 +7,11 @@
       {
         "places_block": "matscraft:rare_mats_ore",
         "may_replace": [
-           "minecraft:stone"
+          "minecraft:stone",
+          "minecraft:diorite",
+          "minecraft:granite",
+          "minecraft:andesite",
+          "minecraft:deepslate"
         ]
       }
     ]
