@@ -1,0 +1,45 @@
+{
+   "format_version": 2,
+   "header": {
+      "name": "MatsCraft",
+      "description": "MatsCraft Behavior Pack",
+      "uuid": "eeb2edbb-9a7a-4865-acb0-1d46181c7628",
+      "version": [1, 4, 1],
+      "min_engine_version": [1, 16, 0]
+   },
+
+   "metadata": {
+      "authors": ["MallardLabs"],
+      "generated_with": {
+         "typescript_starter": ["1.0.0"]
+      }
+   },
+   "modules": [
+      {
+         "description": "Behavior",
+         "version": [1, 0, 0],
+         "uuid": "e39eb06c-a8e0-46c2-a1f9-358e1196d02b",
+         "type": "data"
+      },
+      {
+         "type": "script",
+         "uuid": "54467c33-e65d-433b-9a7e-6a7a0d803ed7",
+         "version": [1, 0, 0],
+         "entry": "scripts/main.js"
+      }
+   ],
+   "dependencies": [
+      {
+         "module_name": "@minecraft/server",
+         "version": "2.1.0-beta"
+      },
+      {
+         "module_name": "@minecraft/server-ui",
+         "version": "2.0.0"
+      },
+      {
+         "module_name": "@minecraft/server-net",
+         "version": "1.0.0-beta"
+      }
+   ]
+}

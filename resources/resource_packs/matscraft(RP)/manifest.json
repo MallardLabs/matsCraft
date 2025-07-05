@@ -1,0 +1,26 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "matscraft",
+    "description": "matscraft Resource Pack",
+    "uuid": "240b9762-c80f-4b2d-bcbf-bb25259dd8b3",
+    "version": [1, 4, 1],
+    "min_engine_version": [1, 16, 0]
+  },
+  "metadata": {
+    "authors": ["mallardlabs"],
+    "generated_with": {
+      "blockbench_block_wizard": ["1.2.2"],
+      "blockbench_item_wizard": ["1.1.0"]
+    }
+  },
+  "modules": [
+    {
+      "description": "matscraft",
+      "type": "resources",
+      "uuid": "a3b03c75-4773-48a7-9945-574639545d59",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": []
+}

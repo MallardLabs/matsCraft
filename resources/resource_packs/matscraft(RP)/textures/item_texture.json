@@ -1,0 +1,22 @@
+{
+  "texture_data": {
+    "mats": {
+      "textures": "textures/items/mats.png"
+    },
+    "matsphone": {
+      "textures": "textures/items/matsphone.png"
+    },
+    "huh": {
+      "textures": "textures/items/huh.png"
+    },
+    "nanndo_pickaxe": {
+      "textures": "textures/items/pickaxe/nando.png"
+    },
+    "lowpolyduck_pickaxe": {
+      "textures": "textures/items/pickaxe/lowpolyduck.png"
+    },
+    "mezo_pickaxe": {
+      "textures": "textures/items/pickaxe/mezo.png"
+    }
+  }
+}
