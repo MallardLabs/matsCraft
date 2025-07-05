@@ -1,19 +1,18 @@
 import { ActionFormData } from "@minecraft/server-ui";
-import {
-  getPlayerScore,
-  getPlayerData,
-  updatePlayerData,
-  setPlayerScore,
-} from "../utils/playerUtils";
 import { showShop } from "./shop";
-
-import httpReq from "../lib/httpReq";
 import genSecret from "../lib/genSecret";
-import CONFIG from "../config/config";
 import showTools from "./tools";
+import {
+  getPlayerData,
+  getPlayerScore,
+  setPlayerData,
+  setPlayerScore,
+} from "../utils/player/index";
+import { httpReq } from "../lib/httpReq";
+import { variables } from "@minecraft/server-admin";
 
 const showDashboard = async (player?: any) => {
-  const playerScore = await getPlayerScore(player, "Mats");
+  const playerScore = getPlayerScore(player, "Mats");
   const playerData = getPlayerData(player);
   const form = new ActionFormData().title("MATSCRAFT");
   form
@@ -39,9 +38,9 @@ const showDashboard = async (player?: any) => {
       const playerData = getPlayerData(player);
       const minecraft_id = playerData.xuid;
       if (minecraft_id) {
-        const response = await httpReq.request({
-          method: "DELETE",
-          url: `${CONFIG.LOGOUT}/${minecraft_id}/logout`,
+        const response = await httpReq({
+          method: "delete",
+          url: `${variables.get("BASE_URL")}/users/${minecraft_id}/logout`,
           headers: {
             "Content-Type": "application/json",
             "matscraft-secret": genSecret(),
@@ -51,9 +50,9 @@ const showDashboard = async (player?: any) => {
         if (response.status === 200) {
           setPlayerScore(player, "Mats", 0);
           setPlayerScore(player, "Huh", 0);
-          updatePlayerData(player, "is_linked", false);
-          updatePlayerData(player, "discord_id", null);
-          updatePlayerData(player, "discord_username", null);
+          setPlayerData(player, "is_linked", false);
+          setPlayerData(player, "discord_id", false);
+          setPlayerData(player, "discord_username", false);
         }
       }
     }

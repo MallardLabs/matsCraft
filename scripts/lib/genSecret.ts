@@ -1,4 +1,4 @@
-import CONFIG from "../config/config";
+import { variables } from "@minecraft/server-admin";
 import { stringToBase62 } from "./base62";
 
 function encrypt(input: string, key: string): string {
@@ -13,7 +13,7 @@ const genSecret = () => {
   const payload = JSON.stringify({
     expires: Math.floor(Date.now() / 1000) + 5 * 60,
   });
-  const encrypted = encrypt(payload, CONFIG.SECRET_KEY);
+  const encrypted = encrypt(payload, variables.get("SECRET_KEY"));
   return stringToBase62(encrypted);
 };
 

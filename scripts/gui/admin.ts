@@ -1,17 +1,17 @@
-import { world, Player } from "@minecraft/server";
+import { world, Player, system } from "@minecraft/server";
 import {
   ActionFormData,
   ModalFormData,
   ModalFormResponse,
   ActionFormResponse,
 } from "@minecraft/server-ui";
-import { getPlayerData, getPlayerScore } from "../utils/playerUtils";
 import showMainMenu from "../gui/main";
+import { getPlayerData, getPlayerScore } from "../utils/player/index";
 
 /**
  * Entry point: shows the main admin menu.
  */
-export default function showAdminMenu(player: Player) {
+export default function showAdminMenu(player: any) {
   new ActionFormData()
     .title("Admin Menu")
     .button("View Player Data")
@@ -35,8 +35,10 @@ export default function showAdminMenu(player: Player) {
     });
 }
 
-function showPlayerSelector(admin: Player) {
-  const players = world.getAllPlayers().filter(p => p.nameTag !== admin.nameTag);
+function showPlayerSelector(admin: any) {
+  const players = world
+    .getAllPlayers()
+    .filter((p) => p.nameTag !== admin.nameTag);
   const names = players.map((p) => p.nameTag);
 
   if (names.length === 0) {
@@ -57,7 +59,7 @@ function showPlayerSelector(admin: Player) {
     });
 }
 
-export function showPlayerDetails(admin: Player, target: Player) {
+export function showPlayerDetails(admin: any, target: Player) {
   const data = getPlayerData(target);
   const inventoryComp = target.getComponent("minecraft:inventory") as any;
 
@@ -78,9 +80,10 @@ export function showPlayerDetails(admin: Player, target: Player) {
     }
   }
 
-  const inventoryDisplay = Object.entries(itemCounts)
-    .map(([name, count]) => `- ${capitalize(name)}: ${count}`)
-    .join("\n") || "Inventory is empty.";
+  const inventoryDisplay =
+    Object.entries(itemCounts)
+      .map(([name, count]) => `- ${capitalize(name)}: ${count}`)
+      .join("\n") || "Inventory is empty.";
 
   const info = [
     `§6XUID: §f${data.xuid}`,
@@ -88,7 +91,7 @@ export function showPlayerDetails(admin: Player, target: Player) {
     `§6Mats: §f${mats}`,
     `§6Huh: §f${huh}`,
     ``,
-    `§6Inventory:\n§f${inventoryDisplay}`
+    `§6Inventory:\n§f${inventoryDisplay}`,
   ].join("\n");
 
   const form = new ActionFormData()
@@ -115,10 +118,10 @@ export function showPlayerDetails(admin: Player, target: Player) {
   });
 }
 
-function teleportToPlayer(source: Player, target: Player) {
+function teleportToPlayer(source: any, target: Player) {
   source.teleport(target.location, {
     dimension: target.dimension,
-    rotation: target.getRotation()
+    rotation: target.getRotation(),
   });
   source.sendMessage(`§aTeleported to §e${target.nameTag}`);
 }
@@ -129,9 +132,11 @@ function applyEffects(player: Player) {
   player.sendMessage("§bEffects applied: Invisibility + Night Vision.");
 }
 
-function showBanPlayerMenu(admin: Player) {
-  const players = world.getAllPlayers().filter(p => p.nameTag !== admin.nameTag);
-  const names = players.map(p => p.nameTag);
+function showBanPlayerMenu(admin: any) {
+  const players = world
+    .getAllPlayers()
+    .filter((p) => p.nameTag !== admin.nameTag);
+  const names = players.map((p) => p.nameTag);
 
   if (names.length === 0) {
     return admin.sendMessage("§cNo players to ban.");
@@ -150,7 +155,7 @@ function showBanPlayerMenu(admin: Player) {
     });
 }
 
-function confirmBan(admin: Player, playerName: string) {
+function confirmBan(admin: any, playerName: string) {
   new ActionFormData()
     .title("Confirm Ban")
     .body(`Are you sure you want to ban §c${playerName}§f?`)

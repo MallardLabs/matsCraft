@@ -1,130 +1,80 @@
+// httpReq.ts
 import {
   HttpRequest,
-  HttpRequestMethod,
   HttpHeader,
+  HttpRequestMethod,
+  http,
   HttpResponse,
 } from "@minecraft/server-net";
-import { http } from "@minecraft/server-net";
 
-interface RequestOptions {
+type Method = "get" | "post" | "put" | "delete" | "head";
+
+interface HttpReqConfig {
+  method: Method;
   url: string;
-  method?: "GET" | "POST" | "PUT" | "DELETE" | "HEAD";
-  body?: Record<string, any> | string | null;
+  data?: unknown;
   headers?: Record<string, string>;
+  timeout?: number;
 }
 
-interface HttpResponseData {
-  status: number;
-  body: string;
-  headers: HttpHeader[];
-}
-
-export default class httpReq {
-  /**
-   * Creates and sends an HTTP request
-   * @param options - Request options
-   * @returns Promise that resolves to the response
-   */
-  static async request(options: RequestOptions): Promise<HttpResponseData> {
-    const { url, method = "GET", body = null, headers = {} } = options;
-
-    if (!url) {
-      throw new Error("URL is required");
-    }
-
-    const request = new HttpRequest(url);
-
-    switch (method.toUpperCase()) {
-      case "GET":
-        request.method = HttpRequestMethod.Get;
-        break;
-      case "POST":
-        request.method = HttpRequestMethod.Post;
-        break;
-      case "PUT":
-        request.method = HttpRequestMethod.Put;
-        break;
-      case "DELETE":
-        request.method = HttpRequestMethod.Delete;
-        break;
-      case "HEAD":
-        request.method = HttpRequestMethod.Head;
-        break;
-      default:
-        request.method = HttpRequestMethod.Get;
-    }
-
-    if (body) {
-      request.body = typeof body === "object" ? JSON.stringify(body) : body;
-    }
-
-    if (Object.keys(headers).length > 0) {
-      request.headers = Object.entries(headers).map(
-        ([key, value]) => new HttpHeader(key, value)
-      );
-    }
-
-    try {
-      const response: HttpResponse = await http.request(request);
-      return {
-        status: response.status,
-        body: response.body,
-        headers: response.headers,
-      };
-    } catch (error: any) {
-      throw new Error(`HTTP Request failed: ${error.message}`);
-    }
-  }
-
-  static async get(
-    url: string,
-    options: { headers?: Record<string, string> } = {}
-  ): Promise<HttpResponseData> {
-    return this.request({
-      url,
-      method: "GET",
-      headers: options.headers || {},
-    });
-  }
-
-  static async post(
-    url: string,
-    body: Record<string, any> | string,
-    options: { headers?: Record<string, string> } = {}
-  ): Promise<HttpResponseData> {
-    return this.request({
-      url,
-      method: "POST",
-      body,
-      headers: options.headers || {},
-    });
-  }
-
-  static async put(
-    url: string,
-    body: Record<string, any> | string,
-    options: { headers?: Record<string, string> } = {}
-  ): Promise<HttpResponseData> {
-    return this.request({
-      url,
-      method: "PUT",
-      body,
-      headers: options.headers || {},
-    });
-  }
-
-  static async delete(
-    url: string,
-    options: {
-      headers?: Record<string, string>;
-      body?: Record<string, any> | string | null;
-    } = {}
-  ): Promise<HttpResponseData> {
-    return this.request({
-      url,
-      method: "DELETE",
-      body: options.body || null,
-      headers: options.headers || {},
-    });
+function toHttpMethod(m: Method): HttpRequestMethod {
+  switch (m) {
+    case "get":
+      return HttpRequestMethod.Get;
+    case "post":
+      return HttpRequestMethod.Post;
+    case "put":
+      return HttpRequestMethod.Put;
+    case "delete":
+      return HttpRequestMethod.Delete;
+    case "head":
+      return HttpRequestMethod.Head;
   }
 }
+
+export async function httpReq(config: HttpReqConfig): Promise<HttpResponse> {
+  const { method, url, data, headers, timeout } = config;
+  const req = new HttpRequest(url);
+  req.setMethod(toHttpMethod(method));
+
+  if (data !== undefined) {
+    // Jika method GET/HEAD, ubah params URL? tapi di sini assume JSON body
+    req.setBody(typeof data === "string" ? data : JSON.stringify(data));
+    if (!headers || !("content-type" in headers)) {
+      req.setHeaders([new HttpHeader("Content-Type", "application/json")]);
+    }
+  }
+
+  if (headers) {
+    const hdrs = Object.entries(headers).map(([k, v]) => new HttpHeader(k, v));
+    req.setHeaders(hdrs);
+  }
+
+  if (timeout !== undefined) {
+    req.setTimeout(timeout);
+  }
+
+  return await http.request(req);
+}
+
+// Shortcut methods
+export const httpReqHelpers = {
+  get: (url: string, headers?: Record<string, string>, timeout?: number) =>
+    httpReq({ method: "get", url, headers, timeout }),
+  post: (
+    url: string,
+    data?: unknown,
+    headers?: Record<string, string>,
+    timeout?: number
+  ) => httpReq({ method: "post", url, data, headers, timeout }),
+  put: (
+    url: string,
+    data?: unknown,
+    headers?: Record<string, string>,
+    timeout?: number
+  ) => httpReq({ method: "put", url, data, headers, timeout }),
+  delete: (url: string, headers?: Record<string, string>, timeout?: number) =>
+    httpReq({ method: "delete", url, headers, timeout }),
+  head: (url: string, headers?: Record<string, string>, timeout?: number) =>
+    httpReq({ method: "head", url, headers, timeout }),
+};

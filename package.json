@@ -1,30 +1,38 @@
 {
-  "name": "matscraft",
+  "name": "minecraft-bedrock-typescript-starter",
   "version": "1.0.0",
-  "description": "Minecraft Bedrock Edition mod",
+  "description": "TypeScript starter project for Minecraft Bedrock Edition",
+  "main": "dist/main.js",
   "scripts": {
-    "build": "tsc && node copy-packs.js",
-    "build:mcpack": "npm run build && node tools/build.js",
-    "watch": "tsc --watch & node watch-copy.js"
-  },
-  "dependencies": {
-    "@minecraft/math": "^2.2.4",
-    "@minecraft/server": "^1.8.0",
-    "@minecraft/server-admin": "1.0.0-beta.11940b24",
-    "@minecraft/server-net": "1.0.0-beta.1.21.83-stable",
-    "@minecraft/server-ui": "^1.3.0",
-    "@minecraft/vanilla-data": "^1.21.81",
-    "archiver": "^7.0.1",
-    "crypto-js": "4.2.0"
+    "watch": "tsc --watch",
+    "sync": "node build-tools/watch.js",
+    "dev": "pnpm run watch & pnpm run sync"
   },
   "devDependencies": {
+    "@minecraft/server": "2.1.0-beta.1.21.93-stable",
+    "@minecraft/server-net": "1.0.0-beta.1.21.93-stable",
+    "@minecraft/server-ui": "^2.0.0",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^20.11.24",
+    "archiver": "^7.0.1",
     "chokidar": "^3.5.3",
+    "crypto-js": "4.2.0",
     "dotenv": "^16.4.5",
     "esbuild": "^0.25.4",
     "fs-extra": "^11.2.0",
     "typescript": "^5.3.3"
   },
-  "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f"
+  "keywords": [
+    "minecraft",
+    "bedrock",
+    "typescript",
+    "addon"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@minecraft/common": "^1.2.0",
+    "@minecraft/server-admin": "1.0.0-beta.11940b24",
+    "fs-extra": "^11.3.0"
+  }
 }

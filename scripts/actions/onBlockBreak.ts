@@ -1,203 +1,182 @@
-import blockBreak from "../events/blockBreak";
-import { worldGetData, worldSetData } from "../utils/worldUtils";
-
+import { Dimension, Player, Block, world, system } from "@minecraft/server";
+import { variables } from "@minecraft/server-admin";
+import blockBreak from "../event/BlockBreak";
+import logger from "../utils/logger";
+import { getPlayerData, showActionBar } from "../utils/player/index";
 import generateRandomString from "../utils/genRandomStr";
-import CONFIG from "../config/config";
-import { world, system } from "@minecraft/server";
-
-import httpReq from "../lib/httpReq";
-import { getPlayerData, showActionBar } from "../utils/playerUtils";
+import { httpReq } from "../lib/httpReq";
 import genSecret from "../lib/genSecret";
-import log from "../utils/logger";
-const pickAxeAbility = [
-  {
-    typeId: "matscraft:nanndo_pickaxe",
-    allowed: ["matscraft:common_mats_ore", "matscraft:uncommon_mats_ore"],
-  },
-  {
-    typeId: "matscraft:lowpolyduck_pickaxe",
-    allowed: [
-      "matscraft:common_mats_ore",
-      "matscraft:uncommon_mats_ore",
-      "matscraft:rare_mats_ore",
-      "matscraft:epic_mats_ore",
-    ],
-  },
-  {
-    typeId: "matscraft:mezo_pickaxe",
-    allowed: [
-      "matscraft:common_mats_ore",
-      "matscraft:uncommon_mats_ore",
-      "matscraft:rare_mats_ore",
-      "matscraft:epic_mats_ore",
-      "matscraft:legendary_mats_ore",
-    ],
-  },
-];
+import { pickAxeAbility } from "../config/pickaxe/index";
+import ore_config from "../config/ore/index";
 
-blockBreak.listen((data, actions) => {
-  const { player, blockId, location, toolTypeId, dimension } = data;
-  const playerData = getPlayerData(player);
+interface BlockLocation {
+  x: number;
+  y: number;
+  z: number;
+}
 
-   if(dimension.id.includes("overworld") && location.y >= 172 ){
-    console.log(location.y)
-    if(player.hasTag("admin") || player.hasTag("builder")){
-      return
-    }
-    actions.restore();
-   }
-  /*
-     If Player is not linked in the world, every block break activity by player it will be restored.
-     So the unlinked players will not mess up in the world
-  */
+interface MinedBlockData {
+  hash: string;
+  minecraft_id: string;
+  block_name: string;
+  location: BlockLocation;
+  pickaxe: string;
+  mined_at: string;
+}
 
-  if (!playerData || !playerData.data.is_linked) {
-    if (player.hasTag("admin")) {
+class BlockManager {
+  private static readonly MAX_PENDING_BLOCKS = 10;
+  private static readonly MATSCRAFT_PREFIX = "matscraft:";
+
+  static handleBlockBreak(data: any, actions: any): void {
+    const { player, blockId, location, toolTypeId, dimension } = data;
+
+    if (
+      !this.isValidBlock(blockId, toolTypeId) ||
+      !this.checkHeightRestriction(dimension, location, player)
+    ) {
       return;
     }
+
+    const playerData = getPlayerData(player);
+    if (!this.canPlayerMine(player, playerData)) {
+      this.handleUnauthorizedMining(actions, player);
+      return;
+    }
+
+    const pickAxe = this.getValidPickaxe(toolTypeId, blockId);
+    if (!pickAxe) {
+      actions.removeDropItem();
+      return;
+    }
+
+    this.processBlockBreak(blockId, location, player, toolTypeId, actions);
+  }
+
+  private static isValidBlock(blockId: string, toolTypeId?: string) {
+    return (
+      blockId.includes(this.MATSCRAFT_PREFIX) &&
+      toolTypeId?.includes(this.MATSCRAFT_PREFIX)
+    );
+  }
+
+  private static checkHeightRestriction(
+    dimension: Dimension,
+    location: BlockLocation,
+    player: Player
+  ): boolean {
+    return (
+      !(dimension.id.includes("overworld") && location.y >= 172) ||
+      player.hasTag("admin") ||
+      player.hasTag("builder")
+    );
+  }
+
+  private static canPlayerMine(player: Player, playerData: any): boolean {
+    return (
+      (playerData?.data.is_linked || player.hasTag("admin")) &&
+      !player.hasTag("banned")
+    );
+  }
+
+  private static handleUnauthorizedMining(actions: any, player: Player): void {
     actions.restore();
     actions.removeDropItem();
-    return;
+    if (player.hasTag("banned")) {
+      showActionBar(player, "§cYou're on ban list! You can't mine matsblocks!");
+      console.warn(`⚠️ Banned player ${player.nameTag} tried to mine blocks`);
+    }
   }
-  // Find The Pickaxe Ability
-  const pickAxe = pickAxeAbility.find((p) => p.typeId === toolTypeId);
 
-  //If players break block with pickaxe which doesn't match in the pickaxe ability, don't drop the item
-  if (blockId.includes("matscraft:")) {
-    if (!pickAxe) {
-      return;
-    }
-    if (!pickAxe.allowed.includes(blockId)) {
-      actions.removeDropItem();
-    }
+  private static getValidPickaxe(toolTypeId: string, blockId: string) {
+    const pickAxe = pickAxeAbility.find((p) => p.typeId === toolTypeId);
+    return pickAxe?.allowed.includes(blockId) ? pickAxe : null;
+  }
 
-    /*
-    Hopper Detector, this will detect 3x4 area to detect hopper is near in mats blocks
-    */
-    const radiusXZ = 4;
-    const rangeUp = 3;
-    const rangeDown = 4;
+  private static processBlockBreak(
+    blockId: string,
+    location: BlockLocation,
+    player: Player,
+    toolTypeId: string,
+    actions: any
+  ): void {
+    const xuid = player.getDynamicProperty("xuid") as string;
+    const drop =
+      ore_config[
+        blockId.replace(this.MATSCRAFT_PREFIX, "") as keyof typeof ore_config
+      ];
 
-    // Find hoppers in the 3x4 area
-    for (let dx = -radiusXZ; dx <= radiusXZ; dx++) {
-      for (let dz = -radiusXZ; dz <= radiusXZ; dz++) {
-        for (let dy = -rangeDown; dy <= rangeUp; dy++) {
-          const pos = {
-            x: location.x + dx,
-            y: location.y + dy,
-            z: location.z + dz,
-          };
+    actions.dropItem(drop);
+    this.storePendingBlock(blockId, location, xuid, toolTypeId);
+  }
 
-          const block = dimension.getBlock(pos);
-          if (block?.typeId.includes("hopper")) {
-            showActionBar(
-              player,
-              "§cYou can't mine matsblocks near a hopper!"
-            );
-            return;
-          }
+  static storePendingBlock(
+    blockId: string,
+    location: BlockLocation,
+    xuid: string,
+    toolTypeId?: string
+  ): void {
+    system.run(() => {
+      const worldData = this.getPendingBlocks();
+      const newData = this.createBlockData(xuid, blockId, location, toolTypeId);
 
-          const entities = dimension.getEntitiesAtBlockLocation(pos);
-          for (const e of entities) {
-            if (e.typeId === "minecraft:hopper_minecart") {
-              showActionBar(
-                player,
-                "§cYou can't mine matsblocks near a hopper minecart!"
-              );
-              return;
-            }
-          }
-        }
+      worldData.push(newData);
+      world.setDynamicProperty("pendingBlock", JSON.stringify(worldData));
+
+      if (worldData.length >= this.MAX_PENDING_BLOCKS) {
+        this.updateBlocks();
       }
-    }
-    // PASS: If all the event before is pass then drop the item.
-    actions.dropItem(
-      CONFIG.ORE_CONFIG[
-        blockId.replace("matscraft:", "") as keyof typeof CONFIG.ORE_CONFIG
-      ]
-    );
-
-    // Store pending block to memory
-    const blockData = createBlockData(
-      playerData.xuid,
-      blockId,
-      location,
-      toolTypeId
-    );
-    storePendingBlock(blockData);
-  }
-});
-
-// Generate Block Data
-const createBlockData = (
-  xuid: number,
-  blockName: string,
-  location: any,
-  toolTypeId: any
-) => {
-  return {
-    hash: generateRandomString(),
-    minecraft_id: xuid,
-    block_name: blockName.replace("matscraft:", ""),
-    location: {
-      x: location.x,
-      y: location.y,
-      z: location.z,
-    },
-    pickaxe: toolTypeId.replace("matscraft:", ""),
-    mined_at: new Date().toISOString(),
-  };
-};
-
-const storePendingBlock = async (data: any) => {
-  let blockData =
-    (worldGetData("pendingBlock") as string) ??
-    worldSetData("pendingBlock", JSON.stringify([]));
-  let parsed = [];
-
-  try {
-    parsed = blockData ? JSON.parse(blockData) : [];
-  } catch (err) {
-    console.error("Failed to parse pendingBlock:", err);
+    });
   }
 
-  parsed.push(data);
-  if (parsed.length >= 10) {
-    await updateBlock(parsed);
-  } else {
-    world.setDynamicProperty("pendingBlock", JSON.stringify(parsed));
+  private static getPendingBlocks(): MinedBlockData[] {
+    const rawData = world.getDynamicProperty("pendingBlock") as string;
+    return rawData ? JSON.parse(rawData) : [];
   }
-};
-// Store pending block to the server
-const updateBlock = async (data: any) => {
-  try {
-    const response = await httpReq.request({
-      method: "POST",
-      url: CONFIG.INSERT_BLOCK,
-      body: JSON.stringify(data),
+
+  private static createBlockData(
+    xuid: string,
+    blockId: string,
+    location: BlockLocation,
+    toolTypeId?: string
+  ): MinedBlockData {
+    return {
+      hash: generateRandomString(),
+      minecraft_id: xuid,
+      block_name: blockId.replace(this.MATSCRAFT_PREFIX, ""),
+      location: { x: location.x, y: location.y, z: location.z },
+      pickaxe: toolTypeId?.replace(this.MATSCRAFT_PREFIX, "") || "",
+      mined_at: new Date().toISOString(),
+    };
+  }
+
+  private static async updateBlocks(): Promise<void> {
+    system.run(async () => {
+      const rawData = world.getDynamicProperty("pendingBlock") as string;
+      const response = await this.sendBlocksToServer(rawData);
+
+      if (response.status === 200) {
+        world.setDynamicProperty("pendingBlock", JSON.stringify([]));
+        logger.info("onBlockBreak", "Successfully saved blocks to database");
+      } else {
+        console.error(
+          `Failed to save blocks: ${response.status} - ${response.body}`
+        );
+      }
+    });
+  }
+
+  private static async sendBlocksToServer(data: string) {
+    return await httpReq({
+      method: "post",
+      url: `${variables.get("BASE_URL")}/users/blocks`,
+      data,
       headers: {
         "Content-Type": "application/json",
         "matscraft-secret": genSecret(),
       },
     });
-
-    if (response.status === 200) {
-      log.info(
-        "onBlockBreak",
-        `Successfully saved ${data.length} blocks to database`
-      );
-
-      world.setDynamicProperty("pendingBlock", JSON.stringify([]));
-    } else {
-      console.error(
-        `Failed to save blocks: ${response.status} - ${response.body}`
-      );
-      world.setDynamicProperty("pendingBlock", JSON.stringify(data));
-    }
-  } catch (error: any) {
-    console.error(`Error sending blocks to database: ${error.message}`);
-    world.setDynamicProperty("pendingBlock", JSON.stringify(data));
   }
-};
+}
 
-
+blockBreak.listen(BlockManager.handleBlockBreak.bind(BlockManager));

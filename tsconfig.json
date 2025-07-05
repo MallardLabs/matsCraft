@@ -1,15 +1,15 @@
 {
-  "compilerOptions": {
-    "target": "ES2021",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "lib": ["ES2021", "DOM"],
-    "strict": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "outDir": "./behavior_packs/matscraft(BP)/scripts"
-  },
-  "include": ["scripts/**/*"],
-  "exclude": []
-} 
+   "compilerOptions": {
+      "target": "ES2021",
+      "module": "ESNext",
+      "moduleResolution": "node",
+      "lib": ["ES2021", "DOM"],
+      "strict": true,
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+      "skipLibCheck": true,
+      "outDir": "./resources/behavior_packs/matscraft(BP)/scripts"
+   },
+   "include": ["scripts/**/*"],
+   "exclude": []
+}

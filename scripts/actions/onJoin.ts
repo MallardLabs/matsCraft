@@ -1,101 +1,130 @@
-import { world, Player } from "@minecraft/server";
-import { initialize as initializeScoreboard } from "../scoreboard/main";
-import {
-  getXUID,
-  getPlayerData,
-  updatePlayerData,
-  setPlayerScore,
-} from "../utils/playerUtils";
-import wait from "../utils/wait";
-import loginAlert from "../gui/loginAlert";
-import httpReq from "../lib/httpReq";
-import CONFIG from "../config/config";
+import { Player, system, world } from "@minecraft/server";
+import getXUID from "../lib/getXUID";
+import logger from "../utils/logger";
+import { httpReq } from "../lib/httpReq";
+import { variables } from "@minecraft/server-admin";
 import genSecret from "../lib/genSecret";
-import log from "../utils/logger";
-initializeScoreboard();
 
+/**
+ * Handles player spawn events.
+ * Gives default item and processes player data on first join.
+ */
 world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
   giveDefaultItem(player);
-  const playerData = getPlayerData(player);
 
-  // Check if players is inital spawn in server. initialSpawn = offline > joined on server
   if (initialSpawn) {
-    log.info("Joined Server",
-      `Player ${player.nameTag} joined the server with data:`,
-      JSON.stringify(playerData)
-    );
-    await handleInitialSpawn(player);
+    const xuid = player.getDynamicProperty("xuid");
 
-    if (!playerData.xuid) {
-      console.log(`Player ${player.nameTag} has no XUID. Fetching...`);
-      const xuid = await getXUID(player);
-      
-      updatePlayerData(player, "xuid", xuid);
-
-      console.log(`Player ${player.nameTag} XUID set to: ${xuid}`);
-      await handleInitialSpawn(player);
+    // If the player does not yet have an XUID saved, fetch and set it
+    if (!xuid) {
+      logger.info(
+        "onJoin ( XUID Fetcher )",
+        `Player ${player.nameTag} has no XUID. Fetching XUID...`
+      );
+      const fetchedXUID = await getXUID(player);
+      player.setDynamicProperty("xuid", fetchedXUID!);
+      logger.info(
+        "onJoin ( XUID Fetcher )",
+        `Player ${player.nameTag} XUID set to: ${fetchedXUID}`
+      );
     }
+
+    // Handle initial spawn logic like syncing player data from the cloud
+    handleInitialSpawn(player);
   }
 });
 
-async function handleInitialSpawn(player: Player) {
-  const playerData = getPlayerData(player);
-  const response = await fetchPlayerData(playerData.xuid);
+/**
+ * Main handler for first-time player spawn.
+ * Fetches player data from backend and applies it, or resets if not found.
+ */
+const handleInitialSpawn = (player: Player) => {
+  system.run(async () => {
+    const xuid = player.getDynamicProperty("xuid") as string | number;
 
-  if (response.status !== 200) {
-    console.log(
-      `Player ${player.nameTag} not found in database. Resetting data...`
+    const response = await fetchPlayerData(xuid!);
+
+    if (response.status !== 200) {
+      console.log(
+        `Player ${player.nameTag} not found in database. Resetting data...`
+      );
+      resetPlayerData(player);
+      return showLoginAlert(player);
+    }
+
+    const playerCloudData = JSON.parse(response.body);
+    setPlayerData(player, playerCloudData);
+
+    logger.info(
+      "onJoin ( Sync Player Cloud Data )",
+      JSON.stringify(playerCloudData)
     );
-    resetPlayerData(player);
-    return showLoginAlertWithDelay(player);
-  }
+  });
+};
 
-  const body = JSON.parse(response.body);
+/**
+ * Gives the player their default phone item upon joining.
+ */
+const giveDefaultItem = (player: Player) => {
+  player.runCommand(`clear @s matsphone:matsphone`);
+  player.runCommand(`give @s matsphone:matsphone 1`);
+};
 
-  if (!body.is_verified) {
-    console.log(
-      `Player ${player.nameTag} is not verified. Showing login alert...`
-    );
-    resetPlayerData(player)
-    return showLoginAlertWithDelay(player);
-  }
-
-  log.info(
-    "Sync Player Data",
-    `\n\n========== Syncing ${player.nameTag} Data ==========\n\nLinked: ${body.is_verified}\nDiscord ID: ${body.discord_id}\nDiscord Username: ${body.discord_username}\nmats: ${body.mats}\nhuh: ${body.huh}\n\n========== Finished Syncing ${player.nameTag} Data ==========`
-  );
-
-  updatePlayerData(player, "is_linked", true);
-  updatePlayerData(player, "discord_id", body.discord_id);
-  updatePlayerData(player, "discord_username", body.discord_username);
-  setPlayerScore(player, "Mats", body.mats);
-  setPlayerScore(player, "Huh", body.huh);
-}
-
-async function fetchPlayerData(xuid: string | number) {
-  return httpReq.request({
-    method: "GET",
-    url: `${CONFIG.GET_USER_DATA}/${xuid}`,
+/**
+ * Fetches player data from the backend using their XUID.
+ */
+const fetchPlayerData = async (xuid: string | number) => {
+  return await httpReq({
+    method: "get",
+    url: `${variables.get("BASE_URL")}/users/${xuid}`,
     headers: {
       "Content-Type": "application/json",
       "matscraft-secret": genSecret(),
     },
   });
-}
+};
 
-function resetPlayerData(player: Player) {
-  setPlayerScore(player, "Mats", 0);
-  setPlayerScore(player, "Huh", 0);
-  updatePlayerData(player, "is_linked", false);
-  updatePlayerData(player, "discord_id", null);
-  updatePlayerData(player, "discord_username", null);
-}
+/**
+ * Resets a player's local data and scores if they are not found in the backend.
+ */
+const resetPlayerData = (player: Player) => {
+  system.run(() => {
+    world.scoreboard
+      .getObjective("Mats")
+      ?.setScore(player.scoreboardIdentity!, 0);
+    world.scoreboard
+      .getObjective("Huh")
+      ?.setScore(player.scoreboardIdentity!, 0);
 
-function giveDefaultItem(player: Player) {
-  player.runCommand(`clear @s matsphone:matsphone`);
-  player.runCommand(`give @s matsphone:matsphone 1`);
-}
+    player.setDynamicProperty("is_linked", false);
+    player.setDynamicProperty("discord_id", false);
+    player.setDynamicProperty("discord_username", false);
+  });
+};
 
-function showLoginAlertWithDelay(player: Player) {
-  wait(200).then(() => loginAlert(player));
-}
+/**
+ * Applies cloud-stored player data to their local game state.
+ */
+const setPlayerData = (player: Player, data: any) => {
+  system.run(() => {
+    world.scoreboard
+      .getObjective("Mats")
+      ?.setScore(player.scoreboardIdentity!, data.mats);
+    world.scoreboard
+      .getObjective("Huh")
+      ?.setScore(player.scoreboardIdentity!, data.huh);
+
+    player.setDynamicProperty("is_linked", true);
+    player.setDynamicProperty("discord_id", data.discord_id);
+    player.setDynamicProperty("discord_username", data.discord_username);
+  });
+};
+
+/**
+ * Displays an action bar login alert to the player.
+ */
+const showLoginAlert = (player: Player) => {
+  player.runCommand(
+    `title @s actionbar {"text":"Login","color":"red","bold":true}`
+  );
+};

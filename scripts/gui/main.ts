@@ -1,4 +1,4 @@
-import { getPlayerData } from "../utils/playerUtils";
+import { getPlayerData } from "../utils/player/index";
 import showDashboard from "./home";
 
 import loginAlert from "./loginAlert";
