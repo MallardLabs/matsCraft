@@ -35,6 +35,12 @@ class OnItemPickup {
       if (player.hasTag("admin")) return;
       if (!itemStack.typeId.includes("ore")) {
          this.processItemPickup(player, itemStack);
+         console.log(
+            `${player.nameTag} §aPicked Up ${itemStack.amount} ${itemStack.typeId.replace(
+               "matscraft:",
+               ""
+            )}!`
+         );
          showActionBar(
             player,
             `§aPicked Up ${itemStack.amount} ${itemStack.typeId.replace("matscraft:", "")}!`

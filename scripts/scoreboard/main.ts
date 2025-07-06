@@ -13,9 +13,8 @@ const scoreBoardConfig = (player: Player) => {
    const data: string[] = [];
 
    const PlayerName = shorten(player.nameTag || player.name, 16);
-   const discordRaw = player.getDynamicProperty("discord_username") as string | undefined;
-   const Discord = shorten(discordRaw ?? "§4Not Linked", 16);
-
+   const discordRaw = player.getDynamicProperty("discord_username") || "§4Not Linked";
+   const Discord = shorten(discordRaw as string, 16);
    const Mats = formatNumber(getScoreBoard(player, "Mats") || 0);
    const Huh = formatNumber(getScoreBoard(player, "Huh") || 0);
    const PlayerLevel = formatNumber(player.level);

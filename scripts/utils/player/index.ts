@@ -1,7 +1,5 @@
 import { Player, system, world } from "@minecraft/server";
 
-
-
 /**
  * Displays a message in the action bar of the specified player and plays a sound effect.
  *
@@ -9,10 +7,9 @@ import { Player, system, world } from "@minecraft/server";
  * @param {string} message - The message to display in the action bar.
  */
 export const showActionBar = (player: Player, message: string): void => {
-  player.runCommand("playsound random.pop @s");
-  player.runCommand(`title @s actionbar ${message}`);
+   player.runCommand("playsound random.pop @s");
+   player.runCommand(`title @s actionbar ${message}`);
 };
-
 
 /**
  * Retrieves detailed data about a specific player.
@@ -26,23 +23,23 @@ export const showActionBar = (player: Player, message: string): void => {
  * @returns {string|null} [returns.data.discord_username] - The Discord username of the player or null if not set.
  */
 export const getPlayerData = (player: Player) => {
-  const xuid = player.getDynamicProperty("xuid") as string | undefined;
-  const discord_id = player.getDynamicProperty("discord_id") as
-    | string
-    | undefined;
-  const discord_username = player.getDynamicProperty("discord_username") as
-    | string
-    | undefined;
-  const is_linked = !!player.getDynamicProperty("is_linked");
+   const xuid = player.getDynamicProperty("xuid") as string | undefined;
+   const discord_id = player.getDynamicProperty("discord_id") as string | undefined;
+   const discord_username = player.getDynamicProperty("discord_username") as string | undefined;
+   const is_linked = !!player.getDynamicProperty("is_linked");
 
-  return {
-    xuid: xuid ?? null,
-    data: {
-      is_linked,
-      discord_id: discord_id ?? null,
-      discord_username: discord_username ?? null,
-    },
-  };
+   return {
+      xuid: xuid ?? null,
+      data: {
+         is_linked,
+         discord_id: discord_id ?? null,
+         discord_username: discord_username ?? null,
+      },
+   };
+};
+export const getPlayerGroup = (player: Player) => {
+   const group = player.getDynamicProperty("group") as string | undefined;
+   return group ? JSON.parse(group) : null;
 };
 
 /**
@@ -52,16 +49,11 @@ export const getPlayerData = (player: Player) => {
  * @param {string} key - The key identifying the dynamic property to be updated or added.
  * @param {string | boolean} value - The value to be assigned to the dynamic property. Can be a string or a boolean.
  */
-export const setPlayerData = (
-  player: Player,
-  key: string,
-  value: string | boolean
-): void => {
-  system.run(() => {
-    player.setDynamicProperty(key, value);
-  });
+export const setPlayerData = (player: Player, key: string, value: string | boolean): void => {
+   system.run(() => {
+      player.setDynamicProperty(key, value);
+   });
 };
-
 
 /**
  * Fetches the score of a given player for a specified objective.
@@ -70,17 +62,14 @@ export const setPlayerData = (
  * @param {string} objectiveName - The name of the scoreboard objective.
  * @returns {number} The score of the player for the given objective. Returns 0 if the objective or player's identity is unavailable, or if the score is not a valid number.
  */
-export const getPlayerScore = (
-  player: Player,
-  objectiveName: string
-): number => {
-  const objective = world.scoreboard.getObjective(objectiveName);
-  const identity = player.scoreboardIdentity;
+export const getPlayerScore = (player: Player, objectiveName: string): number => {
+   const objective = world.scoreboard.getObjective(objectiveName);
+   const identity = player.scoreboardIdentity;
 
-  if (!objective || !identity) return 0;
+   if (!objective || !identity) return 0;
 
-  const score = objective.getScore(identity);
-  return typeof score === "number" ? score : 0;
+   const score = objective.getScore(identity);
+   return typeof score === "number" ? score : 0;
 };
 
 /**
@@ -91,27 +80,19 @@ export const getPlayerScore = (
  * @param {number} score - The score to set for the player in the specified objective.
  * @returns {void}
  */
-export const setPlayerScore = (
-  player: Player,
-  objectiveName: string,
-  score: number
-): void => {
-  const objective = world.scoreboard.getObjective(objectiveName);
-  if (!objective) return;
+export const setPlayerScore = (player: Player, objectiveName: string, score: number): void => {
+   const objective = world.scoreboard.getObjective(objectiveName);
+   if (!objective) return;
 
-  system.run(() => {
-    objective.setScore(player, score);
-  });
+   system.run(() => {
+      objective.setScore(player, score);
+   });
 };
 
-export const addPlayerScore = (
-  player: Player,
-  objectiveName: string,
-  value: number
-): void => {
-  const current = getPlayerScore(player, objectiveName);
-  setPlayerScore(player, objectiveName, current + value);
+export const addPlayerScore = (player: Player, objectiveName: string, value: number): void => {
+   const current = getPlayerScore(player, objectiveName);
+   setPlayerScore(player, objectiveName, current + value);
 };
 export const giveItem = (player: any, itemId: string, amount = 1) => {
-  player.runCommand(`give @s ${itemId} ${amount}`);
+   player.runCommand(`give @s ${itemId} ${amount}`);
 };
