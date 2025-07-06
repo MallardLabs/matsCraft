@@ -1,4 +1,3 @@
-import { world, system } from "@minecraft/server";
 import { displayPlayerScores } from "./scoreboard/main";
 import logger from "./utils/logger";
 import "./actions/onBlockBreak";
@@ -6,11 +5,14 @@ import "./actions/onJoin";
 import "./actions/onItemPickup";
 import "./actions/onItemUse";
 import "./actions/onHopperOpen";
+import "./command/index";
+import "./actions/onLobby";
 import { variables } from "@minecraft/server-admin";
+import { world } from "@minecraft/server";
 displayPlayerScores();
 logger.info("CONFIG", `BASE_URL=${variables.get("BASE_URL")} | SECRET_KEY=${variables.get("SECRET_KEY")} `);
-system.run(() => {
-    for (const player of world.getPlayers()) {
-        console.log(`[${player.nameTag}]`, player.getDynamicProperty("pendingUpdate"));
-    }
+world.afterEvents.worldLoad.subscribe(() => {
+    const groupProperty = ["playerGroups", "playerChatModes", "groupData"].map((prop) => {
+        world.getDynamicProperty(prop) ?? world.setDynamicProperty(prop, "{}");
+    });
 });

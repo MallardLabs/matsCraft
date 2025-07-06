@@ -28,8 +28,7 @@ class BlockManager {
         this.processBlockBreak(blockId, location, player, toolTypeId, actions);
     }
     static isValidBlock(blockId, toolTypeId) {
-        return (blockId.includes(this.MATSCRAFT_PREFIX) &&
-            toolTypeId?.includes(this.MATSCRAFT_PREFIX));
+        return blockId.includes(this.MATSCRAFT_PREFIX) && toolTypeId?.includes(this.MATSCRAFT_PREFIX);
     }
     static checkHeightRestriction(dimension, location, player) {
         return (!(dimension.id.includes("overworld") && location.y >= 172) ||
@@ -37,8 +36,7 @@ class BlockManager {
             player.hasTag("builder"));
     }
     static canPlayerMine(player, playerData) {
-        return ((playerData?.data.is_linked || player.hasTag("admin")) &&
-            !player.hasTag("banned"));
+        return (playerData?.data.is_linked || player.hasTag("admin")) && !player.hasTag("banned");
     }
     static handleUnauthorizedMining(actions, player) {
         actions.restore();
@@ -108,6 +106,6 @@ class BlockManager {
         });
     }
 }
-BlockManager.MAX_PENDING_BLOCKS = 10;
+BlockManager.MAX_PENDING_BLOCKS = 20;
 BlockManager.MATSCRAFT_PREFIX = "matscraft:";
 blockBreak.listen(BlockManager.handleBlockBreak.bind(BlockManager));

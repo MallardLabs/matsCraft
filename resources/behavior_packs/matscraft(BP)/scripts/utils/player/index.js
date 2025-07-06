@@ -34,6 +34,10 @@ export const getPlayerData = (player) => {
         },
     };
 };
+export const getPlayerGroup = (player) => {
+    const group = player.getDynamicProperty("group");
+    return group ? JSON.parse(group) : null;
+};
 /**
  * Updates a dynamic property for a specified player with the given key and value.
  *

@@ -15,6 +15,7 @@ class OnItemPickup {
             return;
         if (!itemStack.typeId.includes("ore")) {
             this.processItemPickup(player, itemStack);
+            console.log(`${player.nameTag} §aPicked Up ${itemStack.amount} ${itemStack.typeId.replace("matscraft:", "")}!`);
             showActionBar(player, `§aPicked Up ${itemStack.amount} ${itemStack.typeId.replace("matscraft:", "")}!`);
             addPlayerScore(player, itemStack.typeId === "matscraft:mats" ? "Mats" : "Huh", itemStack.amount);
         }

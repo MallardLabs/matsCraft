@@ -4,6 +4,9 @@ import logger from "../utils/logger";
 import { httpReq } from "../lib/httpReq";
 import { variables } from "@minecraft/server-admin";
 import genSecret from "../lib/genSecret";
+import { showActionBar } from "../utils/player/index";
+import wait from "../utils/wait";
+import loginAlert from "../gui/loginAlert";
 /**
  * Handles player spawn events.
  * Gives default item and processes player data on first join.
@@ -30,15 +33,22 @@ world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
 const handleInitialSpawn = (player) => {
     system.run(async () => {
         const xuid = player.getDynamicProperty("xuid");
-        const response = await fetchPlayerData(xuid);
-        if (response.status !== 200) {
-            console.log(`Player ${player.nameTag} not found in database. Resetting data...`);
-            resetPlayerData(player);
-            return showLoginAlert(player);
+        try {
+            const response = await fetchPlayerData(xuid);
+            if (response.status !== 200) {
+                console.log(`Player ${player.nameTag} not found in database. Resetting data...`);
+                resetPlayerData(player);
+                return showLoginAlert(player);
+            }
+            const playerCloudData = JSON.parse(response.body);
+            setPlayerData(player, playerCloudData);
+            logger.info("onJoin ( Sync Player Cloud Data )", JSON.stringify(playerCloudData));
         }
-        const playerCloudData = JSON.parse(response.body);
-        setPlayerData(player, playerCloudData);
-        logger.info("onJoin ( Sync Player Cloud Data )", JSON.stringify(playerCloudData));
+        catch (e) {
+            showActionBar(player, "§cThere's something wrong when fetching your data. Please try again later.");
+            resetPlayerData(player);
+            showLoginAlert(player);
+        }
     });
 };
 /**
@@ -66,12 +76,8 @@ const fetchPlayerData = async (xuid) => {
  */
 const resetPlayerData = (player) => {
     system.run(() => {
-        world.scoreboard
-            .getObjective("Mats")
-            ?.setScore(player.scoreboardIdentity, 0);
-        world.scoreboard
-            .getObjective("Huh")
-            ?.setScore(player.scoreboardIdentity, 0);
+        world.scoreboard.getObjective("Mats")?.setScore(player.scoreboardIdentity, 0);
+        world.scoreboard.getObjective("Huh")?.setScore(player.scoreboardIdentity, 0);
         player.setDynamicProperty("is_linked", false);
         player.setDynamicProperty("discord_id", false);
         player.setDynamicProperty("discord_username", false);
@@ -82,12 +88,8 @@ const resetPlayerData = (player) => {
  */
 const setPlayerData = (player, data) => {
     system.run(() => {
-        world.scoreboard
-            .getObjective("Mats")
-            ?.setScore(player.scoreboardIdentity, data.mats);
-        world.scoreboard
-            .getObjective("Huh")
-            ?.setScore(player.scoreboardIdentity, data.huh);
+        world.scoreboard.getObjective("Mats")?.setScore(player.scoreboardIdentity, data.mats);
+        world.scoreboard.getObjective("Huh")?.setScore(player.scoreboardIdentity, data.huh);
         player.setDynamicProperty("is_linked", true);
         player.setDynamicProperty("discord_id", data.discord_id);
         player.setDynamicProperty("discord_username", data.discord_username);
@@ -97,5 +99,12 @@ const setPlayerData = (player, data) => {
  * Displays an action bar login alert to the player.
  */
 const showLoginAlert = (player) => {
-    player.runCommand(`title @s actionbar {"text":"Login","color":"red","bold":true}`);
+    wait(500).then(() => {
+        loginAlert(player);
+    });
 };
+world.afterEvents.playerSpawn.subscribe(async ({ player, initialSpawn }) => {
+    const welcomeMessage = "§6=== New Command Fearutes ===\n§7 Use !help to get started!";
+    await wait(600);
+    player.sendMessage(welcomeMessage);
+});
